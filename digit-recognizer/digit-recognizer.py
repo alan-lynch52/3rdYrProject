@@ -15,6 +15,9 @@ from keras.optimizers import RMSprop
 from keras.preprocessing.image import ImageDataGenerator
 from keras.callbacks import ReduceLROnPlateau
 
+import warnings
+warnings.filterwarnings("ignore")
+
 train = pd.read_csv("train.csv")
 #test = pd.read_csv("test.csv")
 
