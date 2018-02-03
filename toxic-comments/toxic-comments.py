@@ -10,6 +10,8 @@ from keras.utils import np_utils
 import string
 from unidecode import unidecode
 import re
+import json
+
 def main():
     train = pd.read_csv("train.csv")
     test = pd.read_csv("test.csv")
@@ -28,8 +30,8 @@ def main():
     #FEATURE EXTRACTION
     word_bag = {}
     incrementer = 0
-    remove = ",/+-_="
-    replace = "      "
+    remove = ",/+-_='.:()"
+    replace = "           "
 ##    patterns = re.compile("["
 ##                u"\U0001F600-\U0001F64F"
 ##                u"\U0001F300-\U0001F5FF"
@@ -38,14 +40,27 @@ def main():
 ##                "]+", flags=re.UNICODE)
     emoji_strip = re.compile('[\U00010000-\U0010ffff]', flags=re.UNICODE)
     transTable = str.maketrans(remove, replace)
+    lineNum = 1
+    aftermath = 0
     for comment in x['comment_text']:
         comment = comment.translate(transTable)
         comment = emoji_strip.sub(r'',comment)
-        #print(comment)
+        comment = re.sub(r'\t', '', comment)
+        comment = re.sub(r'\n', '', comment)
+        if aftermath == 1:
+            print(comment)
         for word in comment.split():
+            #word = word.encode('ascii','ignore')
             if word not in word_bag:
                 word_bag[word] = incrementer
                 incrementer += 1
+        if lineNum >= 100000:
+            bw_writer(word_bag)
+            word_bag = {}
+            print(word_bag)
+            lineNum = 0
+            aftermath = 1
+        lineNum += 1
     print(word_bag)
 ##    model = buildModel()
 ##    model.fit(x,y,batch_size=32, epochs = 10, verbose = 1, validation_split = 0.2)
@@ -62,10 +77,17 @@ def buildModel():
     cnn.add(Activation('sigmoid'))
     return cnn
 
+def bw_writer(d):
+    with open('bag_of_words.txt','a') as outfile:
+        try:
+            json.dump(d, outfile)
+        except TypeError:
+            print("Type Error found")
+            
 
-
-
-
+def bw_reader(filepath):
+    with open(filepath,'r') as file:
+        return file
 
 
 if __name__ == "__main__":
