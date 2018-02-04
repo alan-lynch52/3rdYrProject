@@ -28,40 +28,12 @@ def main():
     #print(x)
 
     #FEATURE EXTRACTION
-    word_bag = {}
-    incrementer = 0
-    remove = ",/+-_='.:()"
-    replace = "           "
-##    patterns = re.compile("["
-##                u"\U0001F600-\U0001F64F"
-##                u"\U0001F300-\U0001F5FF"
-##                u"\U0001F680-\U0001F6FF"
-##                u"\U0001F1E0-\U0001F1FF"
-##                "]+", flags=re.UNICODE)
-    emoji_strip = re.compile('[\U00010000-\U0010ffff]', flags=re.UNICODE)
-    transTable = str.maketrans(remove, replace)
-    lineNum = 1
-    aftermath = 0
-    for comment in x['comment_text']:
-        comment = comment.translate(transTable)
-        comment = emoji_strip.sub(r'',comment)
-        comment = re.sub(r'\t', '', comment)
-        comment = re.sub(r'\n', '', comment)
-        if aftermath == 1:
-            print(comment)
-        for word in comment.split():
-            #word = word.encode('ascii','ignore')
-            if word not in word_bag:
-                word_bag[word] = incrementer
-                incrementer += 1
-        if lineNum >= 100000:
-            bw_writer(word_bag)
-            word_bag = {}
-            print(word_bag)
-            lineNum = 0
-            aftermath = 1
-        lineNum += 1
-    print(word_bag)
+    #get bag of words
+    clean_x = strip_text(x)
+    #print(clean_x)
+    word_bag = bag_of_words(clean_x)
+    #print(word_bag)
+
 ##    model = buildModel()
 ##    model.fit(x,y,batch_size=32, epochs = 10, verbose = 1, validation_split = 0.2)
 def buildModel():
@@ -78,7 +50,7 @@ def buildModel():
     return cnn
 
 def bw_writer(d):
-    with open('bag_of_words.txt','a') as outfile:
+    with open('bag_of_words.txt','w') as outfile:
         try:
             json.dump(d, outfile)
         except TypeError:
@@ -88,7 +60,38 @@ def bw_writer(d):
 def bw_reader(filepath):
     with open(filepath,'r') as file:
         return file
-
-
+def strip_text(x):
+    commentList = []
+    remove = ",/\+-_='.:()\"[]{}!"
+    replace = "                  "
+    emoji_strip = re.compile('[\U00010000-\U0010ffff]', flags=re.UNICODE)
+    transTable = str.maketrans(remove, replace)
+    #pattern = re.compile('[\W_]+')
+    for comment in x['comment_text']:
+        re.sub('\W+', '',comment)
+        comment = comment.translate(transTable)
+        comment = emoji_strip.sub(r'',comment)
+        comment = re.sub(r'\t', ' ', comment)
+        comment = re.sub(r'\n', ' ', comment)
+        comment = re.sub(r'\r', ' ', comment)
+        comment = comment.lower()
+        comment = unidecode(comment)
+        comment.replace(r'\"', '')
+        #comment = re.split('\W+',comment)
+        commentList.append(comment)
+    return commentList
+def bag_of_words(clean_x):
+    word_bag = {}
+    incrementer = 0
+    for comment in clean_x:
+        for word in comment.split():
+            if word not in word_bag:
+                word_bag[word] = incrementer
+                incrementer += 1
+    bw_writer(word_bag)
+    return word_bag
+def term_freq(term,comment):
+    for word in comment.split():
+        print(word)
 if __name__ == "__main__":
     main()
