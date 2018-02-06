@@ -28,12 +28,13 @@ def main():
     #print(x)
 
     #FEATURE EXTRACTION
-    #get bag of words
     clean_x = strip_text(x)
-    #print(clean_x)
-    word_bag = bag_of_words(clean_x)
-    #print(word_bag)
+    #get bag of words
+    #bag_of_words(clean_x)
 
+    word_bag = read_dict("bag_of_words.json")
+    term_frequencies(word_bag, clean_x)
+    
 ##    model = buildModel()
 ##    model.fit(x,y,batch_size=32, epochs = 10, verbose = 1, validation_split = 0.2)
 def buildModel():
@@ -49,21 +50,22 @@ def buildModel():
     cnn.add(Activation('sigmoid'))
     return cnn
 
-def bw_writer(d):
-    with open('bag_of_words.txt','w') as outfile:
+def write_dict(d, filepath):
+    with open(filepath,'w') as outfile:
         try:
             json.dump(d, outfile)
         except TypeError:
             print("Type Error found")
             
 
-def bw_reader(filepath):
+def read_dict(filepath):
     with open(filepath,'r') as file:
-        return file
+        data = json.load(file)
+        return data
 def strip_text(x):
     commentList = []
-    remove = ",/\+-_='.:()\"[]{}!"
-    replace = "                  "
+    remove = ",/\+-_=.:()\"[]{}!"
+    replace = "                 "
     emoji_strip = re.compile('[\U00010000-\U0010ffff]', flags=re.UNICODE)
     transTable = str.maketrans(remove, replace)
     #pattern = re.compile('[\W_]+')
@@ -74,6 +76,7 @@ def strip_text(x):
         comment = re.sub(r'\t', ' ', comment)
         comment = re.sub(r'\n', ' ', comment)
         comment = re.sub(r'\r', ' ', comment)
+        comment = re.sub("'", '', comment)
         comment = comment.lower()
         comment = unidecode(comment)
         comment.replace(r'\"', '')
@@ -88,10 +91,22 @@ def bag_of_words(clean_x):
             if word not in word_bag:
                 word_bag[word] = incrementer
                 incrementer += 1
-    bw_writer(word_bag)
+    write_dict(word_bag, 'bag_of_words.json')
     return word_bag
-def term_freq(term,comment):
-    for word in comment.split():
-        print(word)
+#takes in a bag of words dictionary and a list of cleaned comments and produces
+# a json file of term freqs for each comment
+def term_frequencies(word_bag, comments):
+    tfDict = {}
+    commentID = 1
+    for comment in comments:
+        tfDict[commentID] = {}
+        #go through each word and count occurences
+        for word in comment.split():
+            if word not in tfDict[commentID]:
+                tfDict[commentID][word] = 1
+            else:
+                tfDict[commentID][word] += 1
+        commentID += 1
+    write_dict(tfDict,'term_freqs.json')
 if __name__ == "__main__":
     main()
