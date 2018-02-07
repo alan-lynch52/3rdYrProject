@@ -30,10 +30,11 @@ def main():
     #FEATURE EXTRACTION
     clean_x = strip_text(x)
     #get bag of words
-    #bag_of_words(clean_x)
+    bag_of_words(clean_x)
 
     word_bag = read_dict("bag_of_words.json")
     term_frequencies(word_bag, clean_x)
+    idf(word_bag, clean_x)
     
 ##    model = buildModel()
 ##    model.fit(x,y,batch_size=32, epochs = 10, verbose = 1, validation_split = 0.2)
@@ -108,5 +109,21 @@ def term_frequencies(word_bag, comments):
                 tfDict[commentID][word] += 1
         commentID += 1
     write_dict(tfDict,'term_freqs.json')
+#given a bag of words and a corpus, generates a json file containg inverse document frequencies for every term in the bag of words
+def idf(word_bag, comments):
+    idf_dict = {}
+    N = len(comments)
+    for term in word_bag:
+        nt = term_doc_count(term, comments)
+        idf_dict[term] = np.log(N/nt)
+    write_dict(idf_dict, "inverse_doc_freqs.json")
+    return idf_dict
+#gets the count of documents that contain a given term from a given corpus
+def term_doc_count(term, comments):
+    doc_count = 1
+    for comment in comments:
+        if term in comment:
+            doc_count += 1
+    return doc_count
 if __name__ == "__main__":
     main()
