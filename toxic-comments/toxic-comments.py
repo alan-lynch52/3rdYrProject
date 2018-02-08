@@ -7,6 +7,8 @@ from keras.layers import Dense, Dropout, Activation, Flatten, Embedding
 from keras.layers import Conv1D, MaxPooling1D
 from keras.utils import np_utils
 
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.linear_model import LogisticRegression
 import string
 from unidecode import unidecode
 import re
@@ -31,10 +33,17 @@ def main():
     clean_x = strip_text(x)
     #get bag of words
     bag_of_words(clean_x)
+    
+    #word_bag = read_dict("bag_of_words.json")
+    #term_frequencies(word_bag, clean_x)
+    #idf(word_bag, clean_x)
+    tfidf_vectorizer = TfidfVectorizer('content')
+    tfidf = tfidf_vectorizer.fit_transform(clean_x)
+    print(tfidf)
 
-    word_bag = read_dict("bag_of_words.json")
-    term_frequencies(word_bag, clean_x)
-    idf(word_bag, clean_x)
+    logreg_model = LogisticRegression()
+    logreg_model.fit(tfidf, y)
+    
     
 ##    model = buildModel()
 ##    model.fit(x,y,batch_size=32, epochs = 10, verbose = 1, validation_split = 0.2)
