@@ -9,6 +9,7 @@ from keras.utils import np_utils
 
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
+from scipy.sparse import csr_matrix
 import string
 from unidecode import unidecode
 import re
@@ -20,29 +21,34 @@ def main():
 
     ##import warnings
     ##warnings.filterwarnings("ignore")
-    y = train.iloc[1:,:]
+    y = train.iloc[0:,:]
     x = train.drop(labels = ['toxic','severe_toxic','obscene','threat','insult','identity_hate'],axis=1)
+    x['comment_text'].fillna("unknown", inplace=True)
     x = x.drop(labels = ['id'],axis = 1)
-
+    
     del train
 
     #print(y)
     #print(x)
 
     #FEATURE EXTRACTION
+
     clean_x = strip_text(x)
-    #get bag of words
-    bag_of_words(clean_x)
     
-    #word_bag = read_dict("bag_of_words.json")
+    #clean_x = [x.split(" ") for x in clean_x]
+    #get bag of words
+    #bag_of_words(clean_x)
+    
+    word_bag = read_dict("bag_of_words.json")
     #term_frequencies(word_bag, clean_x)
     #idf(word_bag, clean_x)
-    tfidf_vectorizer = TfidfVectorizer('content')
+    
+    tfidf_vectorizer = TfidfVectorizer()
+    print("length of y: "+str(len(y)))
+    print("length of x: "+str(len(x['comment_text'])))
     tfidf = tfidf_vectorizer.fit_transform(clean_x)
-    print(tfidf)
-
     logreg_model = LogisticRegression()
-    logreg_model.fit(tfidf, y)
+    logreg_model.fit(tfidf, y['toxic'][0:])
     
     
 ##    model = buildModel()
