@@ -9,8 +9,12 @@ from keras.utils import np_utils
 
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
-from sklearn.naive_bayes import GaussianNB
+from sklearn.naive_bayes import MultinomialNB
 from sklearn.model_selection import train_test_split
+from sklearn.feature_selection import SelectKBest
+from sklearn.feature_selection import chi2
+from sklearn.feature_selection import mutual_info_classif
+
 from scipy.sparse import csr_matrix
 import string
 from unidecode import unidecode
@@ -40,25 +44,37 @@ def main():
     word_bag = read_dict("bag_of_words.json")
     #term_frequencies(word_bag, clean_x)
     #idf(word_bag, clean_x)
-    
-    tfidf_vectorizer = TfidfVectorizer()
-    tfidf = tfidf_vectorizer.fit_transform(x)
-    
+
+    #GET TFIDF scores
+    vectorizer = TfidfVectorizer()
+    tfidf = vectorizer.fit_transform(x)
+    #FEATURE SELECTION
+    print("SelectKBest")
+    k = int(len(vectorizer.get_feature_names())*1)
+    print(type(tfidf))
+    for label in LABELS:
+        tfidf = SelectKBest(chi2, k=k).fit_transform(tfidf,y[label])
+    print(type(tfidf))
+    #SPLIT INTO TRAINING AND VALIDATION SET
+    print("Train test split")
     x_train, x_val, y_train, y_val = train_test_split(tfidf,y, test_size = 0.1, random_state = 2)
+
+    #CREATE MODELS
+    print("Init models")
     logreg_model = LogisticRegression()
-    nb_model = GaussianNB()
-    dense_x_train = x_train.todense('C')
-    dense_x_val = x_val.todense('C')
+    nb_model = MultinomialNB()
+    #dense_x_train = x_train.todense('C')
+    #dense_x_val = x_val.todense('C')
     for label in LABELS:
         logreg_model.fit(x_train, y_train[label])
-        nb_model.fit(dense_x_train, y_train[label])
+        nb_model.fit(x_train, y_train[label])
     logreg_scores = []
     nb_scores = []
     for label in LABELS:
         logreg_scores.append(logreg_model.score(x_val,y_val[label]))
-        nb_scores.append(logreg_model.score(dense_x_val, y_val[label]))
-    print(logreg_scores)
-    print(nb_scores)
+        nb_scores.append(nb_model.score(x_val, y_val[label]))
+    print(np.mean(logreg_scores))
+    print(np.mean(nb_scores))
 ##    model = buildModel()
 ##    model.fit(x,y,batch_size=32, epochs = 10, verbose = 1, validation_split = 0.2)
 def buildModel():
