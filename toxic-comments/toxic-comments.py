@@ -27,7 +27,8 @@ def main():
 
     ##import warnings
     ##warnings.filterwarnings("ignore")
-    y = train.iloc[0:,:]
+    y = train.iloc[:,2:]
+    print(list(y))
     LABELS = ['toxic','severe_toxic','obscene','threat','insult','identity_hate']
     x = train.drop(labels = ['toxic','severe_toxic','obscene','threat','insult','identity_hate'],axis=1)
     x['comment_text'].fillna("unknown", inplace=True)
@@ -57,38 +58,30 @@ def main():
     print(type(tfidf))
     #SPLIT INTO TRAINING AND VALIDATION SET
     print("Train test split")
+    print(list(y))
     x_train, x_val, y_train, y_val = train_test_split(tfidf,y, test_size = 0.1, random_state = 2)
 
     #CREATE MODELS
     print("Init models")
-    logreg_model = LogisticRegression()
-    nb_model = MultinomialNB()
-    #dense_x_train = x_train.todense('C')
-    #dense_x_val = x_val.todense('C')
-    for label in LABELS:
-        logreg_model.fit(x_train, y_train[label])
-        nb_model.fit(x_train, y_train[label])
-    logreg_scores = []
-    nb_scores = []
-    for label in LABELS:
-        logreg_scores.append(logreg_model.score(x_val,y_val[label]))
-        nb_scores.append(nb_model.score(x_val, y_val[label]))
-    print(np.mean(logreg_scores))
-    print(np.mean(nb_scores))
-##    model = buildModel()
-##    model.fit(x,y,batch_size=32, epochs = 10, verbose = 1, validation_split = 0.2)
-def buildModel():
-    cnn = Sequential()
-    cnn.add(Embedding(1000, 20))
-    cnn.add(Dropout(0.2))
-    cnn.add(Conv1D(64, 3, padding='valid',activation='relu'),stride=1)
-    cnn.add(GlobalMaxPooling1D())
-    cnn.add(Dense(256))
-    cnn.add(Dropout(0.2))
-    cnn.add(Activation('relu'))
-    cnn.add(Dense(1))
-    cnn.add(Activation('sigmoid'))
-    return cnn
+    logreg_model = buildModel(LogisticRegression(), x_train, y_train)
+    logreg_scores = scoreModel(logreg_model, x_val, y_val)
+    nb_model = buildModel(MultinomialNB(), x_train, y_train)
+    nb_scores = scoreModel(nb_model, x_val, y_val)
+    print(logreg_scores)
+    print(nb_scores)
+
+def buildModel(model, x, y):
+    print(list(y))
+    for label in list(y):
+        print(label)
+        model.fit(x, y[label])
+    return model
+def scoreModel(model, x, y):
+    scores = []
+    for label in y:
+        score = model.score(x, y[label])
+        scores.append(score)
+    return np.mean(scores)
 
 def write_dict(d, filepath):
     with open(filepath,'w') as outfile:
