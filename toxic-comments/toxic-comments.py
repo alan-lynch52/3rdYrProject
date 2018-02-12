@@ -10,12 +10,17 @@ from keras.utils import np_utils
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
 from sklearn.naive_bayes import MultinomialNB
+from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.feature_selection import SelectKBest
+from sklearn.feature_selection import RFE
 from sklearn.feature_selection import chi2
 from sklearn.feature_selection import mutual_info_classif
 
+from boruta import BorutaPy
+
 from scipy.sparse import csr_matrix
+from scipy.sparse import save_npz
 import string
 from unidecode import unidecode
 import re
@@ -51,32 +56,43 @@ def main():
     tfidf = vectorizer.fit_transform(x)
     #FEATURE SELECTION
     print("SelectKBest")
-    k = int(len(vectorizer.get_feature_names())*1)
-    print(type(tfidf))
+    k = int(len(vectorizer.get_feature_names())*0.5)
     for label in LABELS:
-        tfidf = SelectKBest(chi2, k=k).fit_transform(tfidf,y[label])
-    print(type(tfidf))
+        tfidf_kbest = SelectKBest(chi2, k=k).fit_transform(tfidf,y[label])
+    print("Boruta")
+    rf = RandomForestClassifier()
+    save_npz('tfidf.npz', tfidf)
+    #write_sparse('tfidf.txt', tfidf)
+    #tfidf_dense = tfidf.todense()
+##    for label in LABELS:
+##        tfidf_boruta = BorutaPy(rf, n_estimators = 'auto',
+##                                random_state = 2).fit(tfidf, y[label])
+##    tfidf_boruta.transform(tfidf)
+##    print("RFE")
+##    for label in LABELS:
+##        print("RFE on label: %s" % label)
+##        tfidf_rfe  = RFE(MultinomialNB(), k, step=1).fit_transform(tfidf,y[label])
+    
     #SPLIT INTO TRAINING AND VALIDATION SET
     print("Train test split")
-    print(list(y))
-    x_train, x_val, y_train, y_val = train_test_split(tfidf,y, test_size = 0.1, random_state = 2)
+    x_train, x_val, y_train, y_val = train_test_split(tfidf_kbest,y, test_size = 0.1, random_state = 2)
 
     #CREATE MODELS
     print("Init models")
-    logreg_model = buildModel(LogisticRegression(), x_train, y_train)
-    logreg_scores = scoreModel(logreg_model, x_val, y_val)
-    nb_model = buildModel(MultinomialNB(), x_train, y_train)
-    nb_scores = scoreModel(nb_model, x_val, y_val)
+    logreg_model = build_model(LogisticRegression(), x_train, y_train)
+    logreg_scores = score_model(logreg_model, x_val, y_val)
+    nb_model = build_model(MultinomialNB(), x_train, y_train)
+    nb_scores = score_model(nb_model, x_val, y_val)
     print(logreg_scores)
     print(nb_scores)
 
-def buildModel(model, x, y):
+def build_model(model, x, y):
     print(list(y))
     for label in list(y):
         print(label)
         model.fit(x, y[label])
     return model
-def scoreModel(model, x, y):
+def score_model(model, x, y):
     scores = []
     for label in y:
         score = model.score(x, y[label])
@@ -89,12 +105,16 @@ def write_dict(d, filepath):
             json.dump(d, outfile)
         except TypeError:
             print("Type Error found")
-            
-
 def read_dict(filepath):
     with open(filepath,'r') as file:
         data = json.load(file)
         return data
+def write_sparse(array, filepath):
+    np.savez(filepath, data=array.data, indices = array.indices,
+             indptr = array.indptr, shape = array.shape)
+def read_sparse(filepath):
+    f = np.load(filepath)
+    return csr_matrix((f['data'], f['indices'], f['indptr']), shape = f['shape'])
 def strip_text(x):
     commentList = []
     remove = ",/\+-_=.:()\"[]{}!"
