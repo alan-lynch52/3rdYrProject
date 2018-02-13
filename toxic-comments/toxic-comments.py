@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+import matplotlib.pyplot as plt
 np.random.seed(123)
 
 from keras.models import Sequential
@@ -9,6 +10,8 @@ from keras.utils import np_utils
 
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
+from sklearn.linear_model import RidgeClassifier
+from sklearn.linear_model import SGDClassifier
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
@@ -16,7 +19,7 @@ from sklearn.feature_selection import SelectKBest
 from sklearn.feature_selection import RFE
 from sklearn.feature_selection import chi2
 from sklearn.feature_selection import mutual_info_classif
-
+from sklearn.feature_selection import SelectFromModel
 from boruta import BorutaPy
 
 from scipy.sparse import csr_matrix
@@ -45,11 +48,8 @@ def main():
     
     x = strip_text(x)
     #get bag of words
-    #bag_of_words(clean_x)
     
-    word_bag = read_dict("bag_of_words.json")
-    #term_frequencies(word_bag, clean_x)
-    #idf(word_bag, clean_x)
+    #word_bag = read_dict("bag_of_words.json")
 
     #GET TFIDF scores
     vectorizer = TfidfVectorizer()
@@ -57,35 +57,44 @@ def main():
     #FEATURE SELECTION
     print("SelectKBest")
     k = int(len(vectorizer.get_feature_names())*0.5)
+    C = [0.01, 0.1, 0.25, 0.5, 0.75]
     for label in LABELS:
-        tfidf_kbest = SelectKBest(chi2, k=k).fit_transform(tfidf,y[label])
-    print("Boruta")
-    rf = RandomForestClassifier()
-    save_npz('tfidf.npz', tfidf)
-    #write_sparse('tfidf.txt', tfidf)
-    #tfidf_dense = tfidf.todense()
-##    for label in LABELS:
-##        tfidf_boruta = BorutaPy(rf, n_estimators = 'auto',
-##                                random_state = 2).fit(tfidf, y[label])
-##    tfidf_boruta.transform(tfidf)
-##    print("RFE")
-##    for label in LABELS:
-##        print("RFE on label: %s" % label)
-##        tfidf_rfe  = RFE(MultinomialNB(), k, step=1).fit_transform(tfidf,y[label])
-    
+        kbest = SelectKBest(chi2, k=k).fit(tfidf,y[label])
+        lr = LogisticRegression(penalty = 'l1', C = 0.5).fit(tfidf,y[label])
+        en = SGDClassifier(alpha = 0.1, penalty = 'elasticnet').fit(tfidf,y[label])
+        ridge = RidgeClassifier(alpha = 0.1).fit(tfidf, y[label])
+    sfm_lr = SelectFromModel(lr, prefit = True)
+    sfm_en = SelectFromModel(en, prefit = True)
+    sfm_ridge = SelectFromModel(ridge, prefit = True)
+    tfidf_kbest = kbest.transform(tfidf)
+    tfidf_lr = sfm_lr.transform(tfidf)
+    tfidf_en = sfm_en.transform(tfidf)
+    tfidf_ridge = sfm_ridge.transform(tfidf)
+
+    experiments = []
+    experiments.append(tfidf_kbest)
+    experiments.append(tfidf_lr)
+    experiments.append(tfidf_en)
+    experiments.append(tfidf_ridge)
+    scores = []
     #SPLIT INTO TRAINING AND VALIDATION SET
     print("Train test split")
-    x_train, x_val, y_train, y_val = train_test_split(tfidf_kbest,y, test_size = 0.1, random_state = 2)
+    for new_x in experiments:
+        
+        x_train, x_val, y_train, y_val = train_test_split(new_x,y, test_size = 0.1, random_state = 2)
 
-    #CREATE MODELS
-    print("Init models")
-    logreg_model = build_model(LogisticRegression(), x_train, y_train)
-    logreg_scores = score_model(logreg_model, x_val, y_val)
-    nb_model = build_model(MultinomialNB(), x_train, y_train)
-    nb_scores = score_model(nb_model, x_val, y_val)
-    print(logreg_scores)
-    print(nb_scores)
-
+        #CREATE MODELS
+        #print("Init models")
+        logreg_model = build_model(LogisticRegression(), x_train, y_train)
+        logreg_scores = score_model(logreg_model, x_val, y_val)
+        nb_model = build_model(MultinomialNB(), x_train, y_train)
+        nb_scores = score_model(nb_model, x_val, y_val)
+        #print(logreg_scores)
+        #print(nb_scores)
+        scores.append(logreg_scores)
+    print(scores)
+    plt.bar(scores,0.9)
+    plt.show()
 def build_model(model, x, y):
     print(list(y))
     for label in list(y):
