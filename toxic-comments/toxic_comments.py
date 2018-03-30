@@ -21,13 +21,11 @@ from sklearn.feature_selection import chi2
 from sklearn.feature_selection import mutual_info_classif
 from sklearn.feature_selection import SelectFromModel
 from sklearn.svm import SVC
-from boruta import BorutaPy
 
 from scipy.sparse import csr_matrix
 from scipy.sparse import save_npz
 from scipy.sparse import hstack
 import string
-from unidecode import unidecode
 import time
 import re
 import json
@@ -66,9 +64,16 @@ def main():
     #Get benchmarks
     model = LogisticRegression()
     mnb = MultinomialNB()
-    get_auroc(mnb, train_tfidf, y)
+    bnb = BernoulliNB()
+    d = {}
+    d['LR'] = model
+    d['MNB'] = mnb
+    d['BNB'] = bnb
+    d['BNB2'] = bnb
+    label = 'toxic'
+    get_auroc(d, train_tfidf, y[label], label)
     #MAKING PREDICTION
-
+    
     #WRITE TO CSV
 
     
@@ -105,7 +110,7 @@ def make_prediction(x, y, x_test, test_ids,fs=None,model=LogisticRegression()):
 ##    print("Test ids type: {0}".format(type(test_ids)))
     df = pd.DataFrame.from_dict(data = pred_dict)
     df = pd.concat([test_ids, df], axis=1)
-    return df   
+    return df 
 def benchmark(benchmark_name,model, x, y, fs=None):
     benchmarks = {}
     start = time.time()
@@ -133,44 +138,37 @@ def benchmark(benchmark_name,model, x, y, fs=None):
     benchmarks['num_attributes'] = x.shape[1]
     benchmarks['duration'] = round(duration,2)
     return benchmarks
-def get_auroc(model, x, y):
+def get_auroc(models, x, y, label):
     #split into train and validation set
-    x_train, x_val, y_train, y_val = train_test_split(x, y, test_size = 0.1, random_state=2)
+    x_train, x_val, y_train, y_val = train_test_split(x, y, test_size = 0.4, random_state=2)
     #train each label
     #predict each label
     d = {}
     index = 1
-    for label in y:
-        model.fit(x_train, y_train[label])
+    size = int((len(models)/2))
+    if size%2 == 0:
+        col = size
+        row = size
+    else:
+        col = size+1
+        row = size+1
+    print(row)
+    print(col)
+    for key in models:
+        model = models[key]
+        model.fit(x_train, y_train)
         preds = model.predict_proba(x_val)[:,1]
-        fpr, tpr, th = roc_curve(y_val[label],preds)
-        score = roc_auc_score(y_val[label],preds)
-        print(label)
-        print(index)
-##        d[label] = {}
-##        d[label]['fpr'] = fpr
-##        d[label]['tpr'] = tpr
-        plt.subplot(2,3,index)
+        fpr, tpr, th = roc_curve(y_val,preds)
+        score = roc_auc_score(y_val,preds)
+        plt.subplot(row,col,index)
         plt.plot(fpr,tpr)
-        plt.title(label)
-##        plt.ylabel("True Positive Ratio")
-##        plt.xlabel("False Positive Ratio")
+        plt.title(key)
         score = round(score,4)
         plt.annotate(score, xy=(0.5,0.5))
         index += 1
-##    plt.suptitle("Area under curve ROC")
+    plt.suptitle(label)
     plt.tight_layout()
     plt.show()
-##    plt.subplot(2,3,1)
-##    plt.plot(d['toxic']['fpr'],d['toxic']['tpr'])
-##    plt.title('toxic')
-##    plt.subplot(2,3,2)
-##    plt.title('severe toxic')
-##    plt.plot(d['severe_toxic']['fpr'],d['severe_toxic']['tpr'])
-##    plt.subplot(2,3,3) 
-##    plt.plot(d['obscene']['fpr'],d['obscene']['tpr'])
-##    plt.title('obscene')
-##    plt.show()
 def barplot_benchmark(index, y, title, xticks, ylim=None):
     plt.bar(np.arange(index), y)
     plt.ylim(ylim)
