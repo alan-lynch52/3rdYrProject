@@ -180,13 +180,12 @@ optimal_rfc = RandomForestClassifier(n_estimators=15)
 ##get_auroc(optimal_lr, train_tfidf, y)
 ##get_auroc(optimal_bnb, bin_train, y)
 ##get_auroc(optimal_mnb, train_tfidf, y)
-d = {}
+d = collections.OrderedDict()
 d['LR'] = optimal_lr
 d['MNB'] = optimal_mnb
 d['BNB'] = optimal_bnb
 d['RF'] = optimal_rfc
-for label in LABELS:
-    get_auroc(d, train_tfidf, y[label],label)
+get_auroc(d, train_tfidf, y)
 ###benchmark optimal models
 ##lr_benchmarks = benchmark('lr-solver-sag-c-0.5-tol-0.01',optimal_lr, train_tfidf, y)
 ##write_dict_to_csv(lr_benchmarks,'model-benchmarks.csv')

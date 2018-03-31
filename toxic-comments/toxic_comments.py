@@ -65,13 +65,13 @@ def main():
     model = LogisticRegression()
     mnb = MultinomialNB()
     bnb = BernoulliNB()
-    d = {}
+    d = collections.OrderedDict()
     d['LR'] = model
     d['MNB'] = mnb
     d['BNB'] = bnb
     d['BNB2'] = bnb
     label = 'toxic'
-    get_auroc(d, train_tfidf, y[label], label)
+    get_auroc(d, train_tfidf, y)
     #MAKING PREDICTION
     
     #WRITE TO CSV
@@ -138,35 +138,66 @@ def benchmark(benchmark_name,model, x, y, fs=None):
     benchmarks['num_attributes'] = x.shape[1]
     benchmarks['duration'] = round(duration,2)
     return benchmarks
-def get_auroc(models, x, y, label):
+def get_auroc(models, x, y):
     #split into train and validation set
     x_train, x_val, y_train, y_val = train_test_split(x, y, test_size = 0.4, random_state=2)
     #train each label
     #predict each label
     d = {}
     index = 1
-    size = int((len(models)/2))
-    if size%2 == 0:
-        col = size
-        row = size
-    else:
-        col = size+1
-        row = size+1
+    size = len(list(y))
+    print("size {0}".format(size))
+    col = size/2
+    row = size/3
     print(row)
     print(col)
-    for key in models:
-        model = models[key]
-        model.fit(x_train, y_train)
-        preds = model.predict_proba(x_val)[:,1]
-        fpr, tpr, th = roc_curve(y_val,preds)
-        score = roc_auc_score(y_val,preds)
+    legend_names = list(models.keys())
+    print(legend_names)
+    for label in y:
         plt.subplot(row,col,index)
-        plt.plot(fpr,tpr)
-        plt.title(key)
-        score = round(score,4)
-        plt.annotate(score, xy=(0.5,0.5))
+        plt.title(label)
+        for key in models:
+            model = models[key]
+            model.fit(x_train, y_train[label])
+            preds = model.predict_proba(x_val)[:,1]
+            fpr, tpr, th = roc_curve(y_val[label],preds)
+            score = roc_auc_score(y_val[label],preds)
+            plt.plot(fpr,tpr, label=key)
+            score = round(score,4)
+        #plt.annotate(score, xy=(0.5,0.5))
+        plt.legend(loc='lower right', prop = {'size':15})
         index += 1
-    plt.suptitle(label)
+    plt.tight_layout()
+    plt.show()
+def get_auroc_fe(x_list, y):
+    
+    index = 1
+    size = len(list(y))
+    col = size/2
+    row = size/3
+    print(row)
+    print(col)
+    legend_names = list(x_list.keys())
+    print(legend_names)
+    
+    for label in y:
+        plt.subplot(row,col,index)
+        plt.title(label)
+        for key in x_list:
+            model = LogisticRegression()
+            x = x_list[key]
+            #split into train and validation set
+            x_train, x_val, y_train, y_val = train_test_split(x, y, test_size = 0.4, random_state=2)
+            #train each label
+            #predict each label
+            model.fit(x_train, y_train[label])
+            preds = model.predict_proba(x_val)[:,1]
+            fpr, tpr, th = roc_curve(y_val[label],preds)
+            score = roc_auc_score(y_val[label],preds)
+            plt.plot(fpr,tpr, label=key)
+            score = round(score,4)
+            plt.legend(loc='lower right', prop = {'size':15})
+        index += 1
     plt.tight_layout()
     plt.show()
 def barplot_benchmark(index, y, title, xticks, ylim=None):
