@@ -29,26 +29,26 @@ test_tfidf = tfidf_vec.transform(test['comment_text'])
 
 model = LogisticRegression()
 #RFE MODELS
-rfe_estimator = LogisticRegression()
-rfe_benchmarks = benchmark('rfe-nfeats-300000',model,train_tfidf, y,fs=RFE(rfe_estimator, step=0.05, n_features_to_select=300000))
-print(rfe_benchmarks)
-#write_dict_to_csv(rfe_benchmarks,'benchmarks.csv')
-rfe_benchmarks = benchmark('rfe-nfeats-250000',model,train_tfidf, y,fs=RFE(rfe_estimator, step=0.05, n_features_to_select=250000))
-#write_dict_to_csv(rfe_benchmarks,'benchmarks.csv')
-rfe_benchmarks = benchmark('rfe-nfeats-200000',model,train_tfidf, y,fs=RFE(rfe_estimator, step=0.05, n_features_to_select=200000))
-#write_dict_to_csv(rfe_benchmarks,'benchmarks.csv')
-rfe_benchmarks = benchmark('rfe-nfeats-150000',model,train_tfidf, y,fs=RFE(rfe_estimator, step=0.05, n_features_to_select=150000))
-#write_dict_to_csv(rfe_benchmarks,'benchmarks.csv')
-rfe_benchmarks = benchmark('rfe-nfeats-100000',model,train_tfidf, y,fs=RFE(rfe_estimator, step=0.05, n_features_to_select=100000))
-#write_dict_to_csv(rfe_benchmarks,'benchmarks.csv')
-rfe_benchmarks = benchmark('rfe-nfeats-50000',model,train_tfidf, y,fs=RFE(rfe_estimator, step=0.05, n_features_to_select=50000))
-#write_dict_to_csv(rfe_benchmarks,'benchmarks.csv')
-rfe_benchmarks = benchmark('rfe-nfeats-25000',model,train_tfidf, y,fs=RFE(rfe_estimator, step=0.05, n_features_to_select=25000))
-#write_dict_to_csv(rfe_benchmarks,'benchmarks.csv')
-rfe_benchmarks = benchmark('rfe-nfeats-10000',model,train_tfidf, y,fs=RFE(rfe_estimator, step=0.05, n_features_to_select=10000))
-#write_dict_to_csv(rfe_benchmarks,'benchmarks.csv')
-rfe_benchmarks = benchmark('rfe-nfeats-5000',model,train_tfidf, y,fs=RFE(rfe_estimator, step=0.05, n_features_to_select=5000))
-#write_dict_to_csv(rfe_benchmarks,'benchmarks.csv')
+##rfe_estimator = LogisticRegression()
+##rfe_benchmarks = benchmark('rfe-nfeats-300000',model,train_tfidf, y,fs=RFE(rfe_estimator, step=0.05, n_features_to_select=300000))
+##print(rfe_benchmarks)
+###write_dict_to_csv(rfe_benchmarks,'benchmarks.csv')
+##rfe_benchmarks = benchmark('rfe-nfeats-250000',model,train_tfidf, y,fs=RFE(rfe_estimator, step=0.05, n_features_to_select=250000))
+###write_dict_to_csv(rfe_benchmarks,'benchmarks.csv')
+##rfe_benchmarks = benchmark('rfe-nfeats-200000',model,train_tfidf, y,fs=RFE(rfe_estimator, step=0.05, n_features_to_select=200000))
+###write_dict_to_csv(rfe_benchmarks,'benchmarks.csv')
+##rfe_benchmarks = benchmark('rfe-nfeats-150000',model,train_tfidf, y,fs=RFE(rfe_estimator, step=0.05, n_features_to_select=150000))
+###write_dict_to_csv(rfe_benchmarks,'benchmarks.csv')
+##rfe_benchmarks = benchmark('rfe-nfeats-100000',model,train_tfidf, y,fs=RFE(rfe_estimator, step=0.05, n_features_to_select=100000))
+###write_dict_to_csv(rfe_benchmarks,'benchmarks.csv')
+##rfe_benchmarks = benchmark('rfe-nfeats-50000',model,train_tfidf, y,fs=RFE(rfe_estimator, step=0.05, n_features_to_select=50000))
+###write_dict_to_csv(rfe_benchmarks,'benchmarks.csv')
+##rfe_benchmarks = benchmark('rfe-nfeats-25000',model,train_tfidf, y,fs=RFE(rfe_estimator, step=0.05, n_features_to_select=25000))
+###write_dict_to_csv(rfe_benchmarks,'benchmarks.csv')
+##rfe_benchmarks = benchmark('rfe-nfeats-10000',model,train_tfidf, y,fs=RFE(rfe_estimator, step=0.05, n_features_to_select=10000))
+###write_dict_to_csv(rfe_benchmarks,'benchmarks.csv')
+##rfe_benchmarks = benchmark('rfe-nfeats-5000',model,train_tfidf, y,fs=RFE(rfe_estimator, step=0.05, n_features_to_select=5000))
+###write_dict_to_csv(rfe_benchmarks,'benchmarks.csv')
 
 
 
@@ -59,39 +59,49 @@ k1 = int(num_features*0.1)
 k2 = int(num_features*0.25)
 k3 = int(num_features*0.5)
 k4 = int(num_features*0.75)
-k_list = [k1, k2, k3, k4]
-kbest_find_k(k_list, tfidf, y)
+#k_list = [k1, k2, k3, k4]
+#kbest_find_k(k_list, tfidf, y)
 #k2((num_features)*0.25) found to be the best  for kbest
 
-kbest_benchmarks = benchmark(SelectKBest(chi2, k=k2), model, tfidf, y)
+#kbest_benchmarks = benchmark(SelectKBest(chi2, k=k2), model, tfidf, y)
 
 #SELECT FROM MODEL EXPERIMENTS
-sfm = SelectFromModel(LogisticRegression(), threshold="0.1*mean")
-sfm_benchmarks = benchmark("sfm-th-0.1*mean",model, train_tfidf, y, fs=sfm)
-#write_dict_to_csv(sfm_benchmarks,'benchmarks.csv')
-
-sfm = SelectFromModel(LogisticRegression(), threshold="0.2*mean")
-sfm_benchmarks = benchmark("sfm-th-0.2*mean",model, train_tfidf, y, fs=sfm)  
-#write_dict_to_csv(sfm_benchmarks,'benchmarks.csv')
-
-sfm = SelectFromModel(LogisticRegression(), threshold="0.3*mean")
-sfm_benchmarks = benchmark("sfm-th-0.3*mean",model, train_tfidf, y, fs=sfm)
-#write_dict_to_csv(sfm_benchmarks,'benchmarks.csv')
-
-sfm = SelectFromModel(LogisticRegression(), threshold="0.4*mean")
-sfm_benchmarks = benchmark("sfm-th-0.4*mean",model, train_tfidf, y, fs=sfm)
-#write_dict_to_csv(sfm_benchmarks,'benchmarks.csv')
-
-sfm = SelectFromModel(LogisticRegression(), threshold="0.5*mean")
-sfm_benchmarks = benchmark("sfm-th-0.5*mean",model, train_tfidf, y, fs=sfm)
-#write_dict_to_csv(sfm_benchmarks,'benchmarks.csv')
+##sfm = SelectFromModel(LogisticRegression(), threshold="0.1*mean")
+##sfm_benchmarks = benchmark("sfm-th-0.1*mean",model, train_tfidf, y, fs=sfm)
+###write_dict_to_csv(sfm_benchmarks,'benchmarks.csv')
+##
+##sfm = SelectFromModel(LogisticRegression(), threshold="0.2*mean")
+##sfm_benchmarks = benchmark("sfm-th-0.2*mean",model, train_tfidf, y, fs=sfm)  
+###write_dict_to_csv(sfm_benchmarks,'benchmarks.csv')
+##
+##sfm = SelectFromModel(LogisticRegression(), threshold="0.3*mean")
+##sfm_benchmarks = benchmark("sfm-th-0.3*mean",model, train_tfidf, y, fs=sfm)
+###write_dict_to_csv(sfm_benchmarks,'benchmarks.csv')
+##
+##sfm = SelectFromModel(LogisticRegression(), threshold="0.4*mean")
+##sfm_benchmarks = benchmark("sfm-th-0.4*mean",model, train_tfidf, y, fs=sfm)
+###write_dict_to_csv(sfm_benchmarks,'benchmarks.csv')
+##
+##sfm = SelectFromModel(LogisticRegression(), threshold="0.5*mean")
+##sfm_benchmarks = benchmark("sfm-th-0.5*mean",model, train_tfidf, y, fs=sfm)
+###write_dict_to_csv(sfm_benchmarks,'benchmarks.csv')
 
 
 #PREDICTIONS FOR OPTIMAL FS MODELS
-sfm_preds = make_prediction(train_tfidf, y, test_tfidf, test_ids, fs=SelectFromModel(LogisticRegression(), threshold="0.1*mean"), model=model)
-rfe_preds = make_prediction(train_tfidf, y, test_tfidf, test_ids, fs=RFE(LogisticRegression(),step=1, n_features_to_select=None),model=model)
-kbest_preds = make_prediction(train_tfidf, y, test_tfidf, test_ids,fs = SelectKBest(chi2, k=k2), model=model)
+##sfm_preds = make_prediction(train_tfidf, y, test_tfidf, test_ids, fs=SelectFromModel(LogisticRegression(), threshold="0.1*mean"), model=model)
+##rfe_preds = make_prediction(train_tfidf, y, test_tfidf, test_ids, fs=RFE(LogisticRegression(),step=1, n_features_to_select=None),model=model)
+##kbest_preds = make_prediction(train_tfidf, y, test_tfidf, test_ids,fs = SelectKBest(chi2, k=k2), model=model)
+
+optimal_sfm = SelectFromModel(LogisticRegression(), threshold="0.1*mean")
+optimal_rfe = RFE(LogisticRegression(), step=0.05, n_features_to_select=None)
+optimal_kbest = SelectKBest(chi2, k=k2)
+d = collections.OrderedDict()
+d['SFM'] = optimal_sfm
+d['RFE'] = optimal_rfe
+d['KBEST'] = optimal_kbest
+get_auroc_fs(d, train_tfidf, y)
+
 #to csv
-rfe_preds.to_csv('submission.csv',index=False)
-sfm_preds.to_csv('submission.csv',index=False)
-kbest_preds.to_csv('submission.csv',index = False)
+##rfe_preds.to_csv('submission.csv',index=False)
+##sfm_preds.to_csv('submission.csv',index=False)
+##kbest_preds.to_csv('submission.csv',index = False)

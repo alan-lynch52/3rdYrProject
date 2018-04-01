@@ -170,7 +170,6 @@ def get_auroc(models, x, y):
     plt.tight_layout()
     plt.show()
 def get_auroc_fe(x_list, y):
-    
     index = 1
     size = len(list(y))
     col = size/2
@@ -179,7 +178,6 @@ def get_auroc_fe(x_list, y):
     print(col)
     legend_names = list(x_list.keys())
     print(legend_names)
-    
     for label in y:
         plt.subplot(row,col,index)
         plt.title(label)
@@ -197,6 +195,37 @@ def get_auroc_fe(x_list, y):
             plt.plot(fpr,tpr, label=key)
             score = round(score,4)
             plt.legend(loc='lower right', prop = {'size':15})
+        index += 1
+    plt.tight_layout()
+    plt.show()
+def get_auroc_fs(fs_list, x, y):
+    index = 1
+    size = len(list(y))
+    col = size/2
+    row = size/3
+    legend_names = list(fs_list.keys())
+    for label in y:
+        plt.subplot(row,col,index)
+        plt.title(label)
+        for key in fs_list:
+            print(key)
+            model = LogisticRegression()
+            fs = fs_list[key]
+            fs.fit(x,y[label])
+            if hasattr(fs, "transform"):
+                new_x = fs.transform(x)
+            else:
+                sfm = SelectFromModel(fs, prefit=True)
+                new_x = sfm.transform(x)
+            print("FS Complete")
+            x_train, x_val, y_train, y_val = train_test_split(new_x, y, test_size = 0.4, random_state=2)
+            model.fit(x_train,y_train[label])
+            preds = model.predict_proba(x_val)[:,1]
+            fpr, tpr, th = roc_curve(y_val[label],preds)
+            score = roc_auc_score(y_val[label],preds)
+            plt.plot(fpr,tpr, label=key)
+            score = round(score, 4)
+            plt.legend(loc="lower right", prop = {'size':15})
         index += 1
     plt.tight_layout()
     plt.show()
