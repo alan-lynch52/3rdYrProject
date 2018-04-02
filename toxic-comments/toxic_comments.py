@@ -15,6 +15,7 @@ from sklearn.model_selection import cross_val_score
 from sklearn.model_selection import GridSearchCV
 from sklearn.metrics import roc_auc_score
 from sklearn.metrics import roc_curve
+from sklearn.metrics import confusion_matrix
 from sklearn.feature_selection import SelectKBest
 from sklearn.feature_selection import RFE
 from sklearn.feature_selection import chi2
@@ -31,6 +32,7 @@ import re
 import json
 import csv
 import collections
+import itertools
 def main():
     train = pd.read_csv("train.csv")
     test = pd.read_csv("test.csv")
@@ -69,9 +71,10 @@ def main():
     d['LR'] = model
     d['MNB'] = mnb
     d['BNB'] = bnb
-    d['BNB2'] = bnb
-    label = 'toxic'
-    get_auroc(d, train_tfidf, y)
+##    d['BNB2'] = bnb
+    #get_auroc(d, train_tfidf, y)
+    
+    plot_cm(d, train_tfidf, y)
     #MAKING PREDICTION
     
     #WRITE TO CSV
@@ -138,6 +141,46 @@ def benchmark(benchmark_name,model, x, y, fs=None):
     benchmarks['num_attributes'] = x.shape[1]
     benchmarks['duration'] = round(duration,2)
     return benchmarks
+def plot_cm(models, x, y):
+    x_train, x_val, y_train, y_val = train_test_split(x, y, test_size=0.4, random_state=2)
+    index = 1
+    size = len(list(models))
+    col = size/2+1 if size%2 == 0 else int(size/2)+1
+    row = size/2 if size%2 == 0 else int(size/2)+1
+    print(row)
+    print(col)
+    for label in y:
+        plt.clf()
+        
+        plt.title(label)
+        for key in models:
+            model = models[key]
+            model.fit(x_train, y_train[label])
+            preds = model.predict(x_val)
+            true = y_val[label]
+            cm = confusion_matrix(true,preds)
+            cm = cm.astype('float') / cm.sum(axis=1)[:,np.newaxis]
+            plt.subplot(row, col, index)
+            plt.imshow(cm,interpolation="nearest",cmap=plt.cm.Blues)
+            plt.colorbar()
+            plt.title(key)
+            plt.xlabel("Predicted Label")
+            plt.ylabel("True Label")
+            negative = "not "+label
+            positive = label
+            conds = [negative,positive]
+            ticks = np.arange(len(conds))
+            plt.xticks(ticks,conds)
+            plt.yticks(ticks,conds)
+            thresh = cm.max() / 2
+            fmt = '.2f'
+            for i, j in itertools.product(range(cm.shape[0]), range(cm.shape[1])):
+                plt.text(j, i, format(cm[i, j], fmt),
+                         horizontalalignment="center",
+                         color = "white" if cm[i,j] > thresh else "black")
+            index += 1
+        plt.tight_layout()
+        plt.show()
 def get_auroc(models, x, y):
     #split into train and validation set
     x_train, x_val, y_train, y_val = train_test_split(x, y, test_size = 0.4, random_state=2)
