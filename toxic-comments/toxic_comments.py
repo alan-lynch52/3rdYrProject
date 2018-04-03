@@ -145,42 +145,143 @@ def plot_cm(models, x, y):
     x_train, x_val, y_train, y_val = train_test_split(x, y, test_size=0.4, random_state=2)
     index = 1
     size = len(list(models))
-    col = size/2+1 if size%2 == 0 else int(size/2)+1
-    row = size/2 if size%2 == 0 else int(size/2)+1
+    col = size/2 if size > 1 and size%2 == 0 else int(size/2)+1
+    row = size/2 if size > 1 and size%2 == 0 else int(size/2)+1
     print(row)
     print(col)
-    for label in y:
-        plt.clf()
-        
-        plt.title(label)
-        for key in models:
+    for key in models:
+        c_preds = np.array([])
+        c_true = np.array([])
+        for label in y:
             model = models[key]
             model.fit(x_train, y_train[label])
             preds = model.predict(x_val)
             true = y_val[label]
-            cm = confusion_matrix(true,preds)
-            cm = cm.astype('float') / cm.sum(axis=1)[:,np.newaxis]
-            plt.subplot(row, col, index)
-            plt.imshow(cm,interpolation="nearest",cmap=plt.cm.Blues)
-            plt.colorbar()
-            plt.title(key)
-            plt.xlabel("Predicted Label")
-            plt.ylabel("True Label")
-            negative = "not "+label
-            positive = label
-            conds = [negative,positive]
-            ticks = np.arange(len(conds))
-            plt.xticks(ticks,conds)
-            plt.yticks(ticks,conds)
-            thresh = cm.max() / 2
-            fmt = '.2f'
-            for i, j in itertools.product(range(cm.shape[0]), range(cm.shape[1])):
-                plt.text(j, i, format(cm[i, j], fmt),
-                         horizontalalignment="center",
-                         color = "white" if cm[i,j] > thresh else "black")
-            index += 1
-        plt.tight_layout()
-        plt.show()
+            c_preds = np.append(c_preds,preds)
+            c_true = np.append(c_true,true)
+        cm = confusion_matrix(c_true,c_preds)
+        cm = cm.astype('float') / cm.sum(axis=1)[:,np.newaxis]
+        plt.subplot(row, col, index)
+        plt.imshow(cm,interpolation="nearest",cmap=plt.cm.Blues)
+        plt.colorbar()
+        plt.title(key)
+        plt.xlabel("Predicted Label")
+        plt.ylabel("True Label")
+        negative = "0"
+        positive = "1"
+        conds = [negative,positive]
+        ticks = np.arange(len(conds))
+        plt.xticks(ticks,conds)
+        plt.yticks(ticks,conds)
+        thresh = cm.max() / 2
+        fmt = '.2f'
+        for i, j in itertools.product(range(cm.shape[0]), range(cm.shape[1])):
+            plt.text(j, i, format(cm[i, j], fmt),
+                     horizontalalignment="center",
+                     color = "white" if cm[i,j] > thresh else "black")
+        index += 1
+    plt.tight_layout()
+    plt.show()
+def plot_cm_fs(fs_list, x, y):
+    model = LogisticRegression()
+    index = 1
+    size = len(list(fs_list))
+    col = size/2 if size > 1 and size%2 == 0 else int(size/2)+1
+    row = size/2 if size > 1 and size%2 == 0 else int(size/2)+1
+    for key in fs_list:
+        c_preds = np.array([])
+        c_true = np.array([])
+        for label in y:
+            fs = fs_list[key]
+            fs.fit(x, y[label])
+            new_x = fs.transform(x)
+            x_train, x_val, y_train, y_val = train_test_split(new_x, y, test_size=0.4, random_state=2)
+            model.fit(x_train, y_train[label])
+            preds = model.predict(x_val)
+            true = y_val[label]
+            c_preds = np.append(c_preds,preds)
+            c_true = np.append(c_true,true)
+        cm = confusion_matrix(c_true,c_preds)
+        cm = cm.astype('float') / cm.sum(axis=1)[:,np.newaxis]
+        plt.subplot(row, col, index)
+        plt.imshow(cm,interpolation="nearest",cmap=plt.cm.Blues)
+        plt.colorbar()
+        plt.title(key)
+        plt.xlabel("Predicted Label")
+        plt.ylabel("True Label")
+        negative = "0"
+        positive = "1"
+        conds = [negative,positive]
+        ticks = np.arange(len(conds))
+        plt.xticks(ticks,conds)
+        plt.yticks(ticks,conds)
+        thresh = cm.max() / 2
+        fmt = '.2f'
+        for i, j in itertools.product(range(cm.shape[0]), range(cm.shape[1])):
+            plt.text(j, i, format(cm[i, j], fmt),
+                     horizontalalignment="center",
+                     color = "white" if cm[i,j] > thresh else "black")
+        index += 1
+    plt.tight_layout()
+    plt.show()
+def plot_cm_fe(x_list, y):
+    model = LogisticRegression()
+    index = 1
+    size = len(list(x_list))
+    col = size/2 if size > 1 and size%2 == 0 else int(size/2)+1
+    row = size/2 if size > 1 and size%2 == 0 else int(size/2)+1
+    for key in x_list:
+        x = x_list[key]
+        c_preds = np.array([])
+        c_true = np.array([])
+        for label in y:
+            x_train, x_val, y_train, y_val = train_test_split(x, y, test_size=0.4, random_state=2)
+            model.fit(x_train, y_train[label])
+            preds = model.predict(x_val)
+            true = y_val[label]
+            c_preds = np.append(c_preds,preds)
+            c_true = np.append(c_true,true)
+        cm = confusion_matrix(c_true,c_preds)
+        cm = cm.astype('float') / cm.sum(axis=1)[:,np.newaxis]
+        plt.subplot(row, col, index)
+        plt.imshow(cm,interpolation="nearest",cmap=plt.cm.Blues)
+        plt.colorbar()
+        plt.title(key)
+        plt.xlabel("Predicted Label")
+        plt.ylabel("True Label")
+        negative = "0"
+        positive = "1"
+        conds = [negative,positive]
+        ticks = np.arange(len(conds))
+        plt.xticks(ticks,conds)
+        plt.yticks(ticks,conds)
+        thresh = cm.max() / 2
+        fmt = '.2f'
+        for i, j in itertools.product(range(cm.shape[0]), range(cm.shape[1])):
+            plt.text(j, i, format(cm[i, j], fmt),
+                     horizontalalignment="center",
+                     color = "white" if cm[i,j] > thresh else "black")
+        index += 1
+    plt.tight_layout()
+    plt.show()
+def get_balanced_accuracy(models, x, y):
+    x_train, x_val, y_train, y_val = train_test_split(x, y, test_size=0.4, random_state=2)
+    c_preds = np.array([])
+    c_true = np.array([])
+    bacc_list = {}
+    for key in models:
+        model = models[key]
+        for label in y:
+            model.fit(x_train, y_train[label])
+            preds = model.predict(x_val)
+            true = y_val[label]
+            c_preds = np.append(c_preds, preds)
+            c_true = np.append(c_true, true)
+        #roc_auc is equivalent to balanced accuracy given binary preds and true labels
+        bacc = roc_auc_score(c_true, c_preds)
+        bacc_list[key] = bacc
+    print(bacc_list)
+    return bacc_list
 def get_auroc(models, x, y):
     #split into train and validation set
     x_train, x_val, y_train, y_val = train_test_split(x, y, test_size = 0.4, random_state=2)

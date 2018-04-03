@@ -185,7 +185,9 @@ d['LR'] = optimal_lr
 d['MNB'] = optimal_mnb
 d['BNB'] = optimal_bnb
 d['RF'] = optimal_rfc
-get_auroc(d, train_tfidf, y)
+#get_auroc(d, train_tfidf, y)
+#plot_cm(d,train_tfidf, y)
+get_balanced_accuracy(d,train_tfidf, y)
 ###benchmark optimal models
 ##lr_benchmarks = benchmark('lr-solver-sag-c-0.5-tol-0.01',optimal_lr, train_tfidf, y)
 ##write_dict_to_csv(lr_benchmarks,'model-benchmarks.csv')

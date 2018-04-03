@@ -96,11 +96,16 @@ optimal_sfm = SelectFromModel(LogisticRegression(), threshold="0.1*mean")
 optimal_rfe = RFE(LogisticRegression(), step=0.05, n_features_to_select=None)
 optimal_kbest = SelectKBest(chi2, k=k2)
 d = collections.OrderedDict()
-d['SFM'] = optimal_sfm
-d['RFE'] = optimal_rfe
-d['KBEST'] = optimal_kbest
-get_auroc_fs(d, train_tfidf, y)
+##d['SFM'] = optimal_sfm
+##d['RFE'] = optimal_rfe
+##d['KBEST'] = optimal_kbest
 
+d['B-SFM'] = SelectFromModel(LogisticRegression())
+d['B-RFE'] = RFE(LogisticRegression(), step=0.05)
+d['B-KBEST'] = SelectKBest(chi2)
+
+#get_auroc_fs(d, train_tfidf, y)
+plot_cm_fs(d, train_tfidf, y)
 #to csv
 ##rfe_preds.to_csv('submission.csv',index=False)
 ##sfm_preds.to_csv('submission.csv',index=False)
