@@ -70,50 +70,72 @@ def main():
     d = collections.OrderedDict()
     d['LR'] = model
     d['MNB'] = mnb
-    d['BNB'] = bnb
+##    d['BNB'] = bnb
 ##    d['BNB2'] = bnb
-    #get_auroc(d, train_tfidf, y)
+    get_auroc(d, train_tfidf, y)
     
-    plot_cm(d, train_tfidf, y)
+    #plot_cm(d, train_tfidf, y)
     #MAKING PREDICTION
+##    x_train, x_val, y_train, y_val = train_test_split(train_tfidf, y, test_size = 0.4, random_state = 2)
+##    preds = get_prediction(x_train, y_train, x_val, model=model)
+##    probs = get_probability(x_train, y_train, x_val, model=model)
+##    preds.to_csv('val/LR_Preds.csv', index=False)
+##    probs.to_csv('val/LR_Probs.csv',index=False)
+##    y_val.to_csv('val/LR_True.csv', index=False)
     
     #WRITE TO CSV
 
     
-def make_prediction(x, y, x_test, test_ids,fs=None,model=LogisticRegression()):
+def get_probability(x, y, x_test, test_ids=None,fs=None,model=LogisticRegression()):
     print(x_test.shape)
     print(x.shape)
     pred_dict = collections.OrderedDict()
     print(type(test_ids))
-    #pred_dict['id'] = test_ids
     for label in y:
         if fs != None:
             if hasattr(fs, 'transform'):
-                x = fs.fit_transform(x,y[label])
-                x_test = fs.transform(x_test)
+                new_x = fs.fit_transform(x,y[label])
+                new_x_test = fs.transform(x_test)
             else:
                 fs.fit(x,y[label])
                 sfm = SelectFromModel(fs, prefit = True)
-                x = sfm.transform(x)
-                x_test = sfm.transform(x_test)
-        model.fit(x, y[label])
-        pred = model.predict_proba(x_test)
-        print(pred)
-        pred = pred.tolist()
-        pred_dict[label] = []
-        for item in pred:
-            pred_dict[label].append(item[1])
-    #print("IDs: {0}".format(pred_dict['id'][1:10]))
-##    print("Toxic: {0}".format(pred_dict['toxic'][1:10]))
-##    print("Severe Toxic: {0}".format(pred_dict['severe_toxic'][1:10]))
-##    print("Threat: {0}".format(pred_dict['threat'][1:10]))
-##    print("Insult: {0}".format(pred_dict['insult'][1:10]))
-##    print("Identity Hate: {0}".format(pred_dict['identity_hate'][1:10]))
-##    print("Dictionary Length: {0}".format(len(pred_dict)))
-##    print("Test ids type: {0}".format(type(test_ids)))
+                new_x = sfm.transform(x)
+                new_x_test = sfm.transform(x_test)
+        else:
+            new_x = x
+            new_x_test = x_test
+        model.fit(new_x, y[label])
+        pred = model.predict_proba(new_x_test)[:,1]
+        pred_dict[label] = pred
     df = pd.DataFrame.from_dict(data = pred_dict)
-    df = pd.concat([test_ids, df], axis=1)
-    return df 
+    if test_ids != None:
+        df = pd.concat([test_ids, df], axis=1)
+    return df
+def get_prediction(x, y, x_test, test_ids=None,fs=None,model=LogisticRegression()):
+    print(x_test.shape)
+    print(x.shape)
+    pred_dict = collections.OrderedDict()
+    print(type(test_ids))
+    for label in y:
+        if fs != None:
+            if hasattr(fs, 'transform'):
+                new_x = fs.fit_transform(x,y[label])
+                new_x_test = fs.transform(x_test)
+            else:
+                fs.fit(x,y[label])
+                sfm = SelectFromModel(fs, prefit = True)
+                new_x = sfm.transform(x)
+                new_x_test = sfm.transform(x_test)
+        else:
+            new_x = x
+            new_x_test = x_test
+        model.fit(new_x, y[label])
+        pred = model.predict(new_x_test)
+        pred_dict[label] = pred
+    df = pd.DataFrame.from_dict(data = pred_dict)
+    if test_ids != None:
+        df = pd.concat([test_ids, df], axis=1)
+    return df
 def benchmark(benchmark_name,model, x, y, fs=None):
     benchmarks = {}
     start = time.time()
@@ -279,6 +301,29 @@ def get_balanced_accuracy(models, x, y):
             c_true = np.append(c_true, true)
         #roc_auc is equivalent to balanced accuracy given binary preds and true labels
         bacc = roc_auc_score(c_true, c_preds)
+        bacc = round(bacc,4)
+        bacc_list[key] = bacc
+    print(bacc_list)
+    return bacc_list
+def get_balanced_accuracy_fs(fs_list, x, y):
+    model = LogisticRegression()
+    c_preds = np.array([])
+    c_true = np.array([])
+    bacc_list = {}
+    for key in fs_list:
+        fs = fs_list[key]
+        for label in y:
+            fs.fit(x,y[label])
+            new_x = fs.transform(x)
+            x_train, x_val, y_train, y_val = train_test_split(new_x, y, test_size=0.4, random_state=2)
+            model.fit(x_train, y_train[label])
+            preds = model.predict(x_val)
+            true = y_val[label]
+            c_preds = np.append(c_preds, preds)
+            c_true = np.append(c_true, true)
+        #roc_auc is equivalent to balanced accuracy given binary preds and true labels
+        bacc = roc_auc_score(c_true, c_preds)
+        bacc = round(bacc,4)
         bacc_list[key] = bacc
     print(bacc_list)
     return bacc_list
@@ -289,10 +334,11 @@ def get_auroc(models, x, y):
     #predict each label
     d = {}
     index = 1
+    print(type(y))
     size = len(list(y))
     print("size {0}".format(size))
-    col = size/2
-    row = size/3
+    col = size/2 if size > 1 and size%2 == 0 else int(size/2)+1
+    row = size/2 if size > 1 and size%2 == 0 else int(size/2)+1
     print(row)
     print(col)
     legend_names = list(models.keys())
@@ -316,8 +362,8 @@ def get_auroc(models, x, y):
 def get_auroc_fe(x_list, y):
     index = 1
     size = len(list(y))
-    col = size/2
-    row = size/3
+    col = size/2 if size > 1 and size%2 == 0 else int(size/2)+1
+    row = size/2 if size > 1 and size%2 == 0 else int(size/2)+1
     print(row)
     print(col)
     legend_names = list(x_list.keys())
@@ -345,8 +391,8 @@ def get_auroc_fe(x_list, y):
 def get_auroc_fs(fs_list, x, y):
     index = 1
     size = len(list(y))
-    col = size/2
-    row = size/3
+    col = size/2 if size > 1 and size%2 == 0 else int(size/2)+1
+    row = size/2 if size > 1 and size%2 == 0 else int(size/2)+1
     legend_names = list(fs_list.keys())
     for label in y:
         plt.subplot(row,col,index)
