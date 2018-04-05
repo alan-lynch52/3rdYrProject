@@ -72,16 +72,16 @@ def main():
     d['MNB'] = mnb
 ##    d['BNB'] = bnb
 ##    d['BNB2'] = bnb
-    get_auroc(d, train_tfidf, y)
+    #get_auroc(d, train_tfidf, y)
     
     #plot_cm(d, train_tfidf, y)
     #MAKING PREDICTION
-##    x_train, x_val, y_train, y_val = train_test_split(train_tfidf, y, test_size = 0.4, random_state = 2)
-##    preds = get_prediction(x_train, y_train, x_val, model=model)
-##    probs = get_probability(x_train, y_train, x_val, model=model)
-##    preds.to_csv('val/LR_Preds.csv', index=False)
-##    probs.to_csv('val/LR_Probs.csv',index=False)
-##    y_val.to_csv('val/LR_True.csv', index=False)
+    x_train, x_val, y_train, y_val = train_test_split(train_tfidf, y, test_size = 0.4, random_state = 2)
+    preds = get_prediction(x_train, y_train, x_val, model=model)
+    probs = get_probability(x_train, y_train, x_val, model=model)
+    preds.to_csv('val/LR_Preds.csv', index=False)
+    probs.to_csv('val/LR_Probs.csv',index=False)
+    y_val.to_csv('val/LR_True.csv', index=False)
     
     #WRITE TO CSV
 
@@ -221,6 +221,43 @@ def plot_cm_fs(fs_list, x, y):
             model.fit(x_train, y_train[label])
             preds = model.predict(x_val)
             true = y_val[label]
+            c_preds = np.append(c_preds,preds)
+            c_true = np.append(c_true,true)
+        cm = confusion_matrix(c_true,c_preds)
+        cm = cm.astype('float') / cm.sum(axis=1)[:,np.newaxis]
+        plt.subplot(row, col, index)
+        plt.imshow(cm,interpolation="nearest",cmap=plt.cm.Blues)
+        plt.colorbar()
+        plt.title(key)
+        plt.xlabel("Predicted Label")
+        plt.ylabel("True Label")
+        negative = "0"
+        positive = "1"
+        conds = [negative,positive]
+        ticks = np.arange(len(conds))
+        plt.xticks(ticks,conds)
+        plt.yticks(ticks,conds)
+        thresh = cm.max() / 2
+        fmt = '.2f'
+        for i, j in itertools.product(range(cm.shape[0]), range(cm.shape[1])):
+            plt.text(j, i, format(cm[i, j], fmt),
+                     horizontalalignment="center",
+                     color = "white" if cm[i,j] > thresh else "black")
+        index += 1
+    plt.tight_layout()
+    plt.show()
+def plot_cm_ensemble(ensemble_pred_list, true_list):
+    index = 1
+    size = len(list(ensemble_pred_list))
+    col = size/2 if size > 1 and size%2 == 0 else int(size/2)+1
+    row = size/2 if size > 1 and size%2 == 0 else int(size/2)+1
+    for key in ensemble_pred_list:
+        ensemble = ensemble_pred_list[key]
+        c_preds = np.array([])
+        c_true = np.array([])
+        for label in true_list:
+            preds = ensemble[label]
+            true = true_list[label]
             c_preds = np.append(c_preds,preds)
             c_true = np.append(c_true,true)
         cm = confusion_matrix(c_true,c_preds)
@@ -415,6 +452,24 @@ def get_auroc_fs(fs_list, x, y):
             score = roc_auc_score(y_val[label],preds)
             plt.plot(fpr,tpr, label=key)
             score = round(score, 4)
+            plt.legend(loc="lower right", prop = {'size':15})
+        index += 1
+    plt.tight_layout()
+    plt.show()
+def get_auroc_ensemble(ensemble_pred_list, true_list):
+    index = 1
+    size = len(list(true_list))
+    col = size/2 if size > 1 and size%2 == 0 else int(size/2)+1
+    row = size/2 if size > 1 and size%2 == 0 else int(size/2)+1
+    for label in true_list:
+        plt.subplot(row, col, index)
+        plt.title(label)
+        for key in ensemble_pred_list:
+            ensemble = ensemble_pred_list[key]
+            preds = ensemble[label]
+            true = true_list[label]
+            fpr, tpr, th = roc_curve(true,preds)
+            plt.plot(fpr, tpr, label=key)
             plt.legend(loc="lower right", prop = {'size':15})
         index += 1
     plt.tight_layout()

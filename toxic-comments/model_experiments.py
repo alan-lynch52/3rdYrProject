@@ -185,9 +185,34 @@ d['LR'] = optimal_lr
 d['MNB'] = optimal_mnb
 d['BNB'] = optimal_bnb
 d['RF'] = optimal_rfc
+x_train, x_val, y_train, y_val = train_test_split(train_tfidf, y,test_size=0.4, random_state = 2)
+##lr_preds = get_prediction(x_train, y_train, x_val, model = optimal_lr)
+##lr_probs = get_probability(x_train, y_train, x_val, model = optimal_lr)
+##lr_preds.to_csv('val/lr_preds.csv',index=False)
+##lr_probs.to_csv('val/lr_probs.csv',index=False)
+##
+##mnb_preds = get_prediction(x_train, y_train, x_val, model = optimal_mnb)
+##mnb_probs = get_probability(x_train, y_train, x_val, model = optimal_mnb)
+##mnb_preds.to_csv('val/mnb_preds.csv',index=False)
+##mnb_probs.to_csv('val/mnb_probs.csv',index=False)
+##
+##bnb_preds = get_prediction(x_train, y_train, x_val, model = optimal_bnb)
+##bnb_probs = get_probability(x_train, y_train, x_val, model = optimal_bnb)
+##bnb_preds.to_csv('val/bnb_preds.csv',index=False)
+##bnb_probs.to_csv('val/bnb_probs.csv',index=False)
+##
+##rf_preds = get_prediction(x_train, y_train, x_val, model = optimal_rfc)
+##rf_probs = get_probability(x_train, y_train, x_val, model = optimal_rfc)
+##rf_preds.to_csv('val/rf_preds.csv',index=False)
+##rf_probs.to_csv('val/rf_probs.csv',index=False)
+
+true = y_val
+true.to_csv('val/true_labels.csv',index=False)
+
 #get_auroc(d, train_tfidf, y)
 #plot_cm(d,train_tfidf, y)
-get_balanced_accuracy(d,train_tfidf, y)
+#get_balanced_accuracy(d,train_tfidf, y)
+
 ###benchmark optimal models
 ##lr_benchmarks = benchmark('lr-solver-sag-c-0.5-tol-0.01',optimal_lr, train_tfidf, y)
 ##write_dict_to_csv(lr_benchmarks,'model-benchmarks.csv')
