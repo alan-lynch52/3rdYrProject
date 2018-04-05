@@ -34,8 +34,9 @@ import csv
 import collections
 import itertools
 import sys
-sys.path.insert(0, 'U:/Documents/3rdYrProject/3rdYrProject/toxic-comments')
+sys.path.insert(0, '..')
 from toxic_comments import *
+global CLASSES
 CLASSES = {
     '0':'negative',
     '1':'somewhat negative',
@@ -55,5 +56,12 @@ d = collections.OrderedDict()
 d['LR'] = LogisticRegression()
 d['MNB'] = MultinomialNB()
 d['BNB'] = BernoulliNB()
-#get_auroc(d,x,y)
+d['RF'] = RandomForestClassifier()
+
+get_auroc(d,x,y)
 plot_cm(d,x,y)
+benchmark('mov-rev-lr',d['LR'],x,y,fs=None)
+benchmark('mov-rev-lr',d['MNB'],x,y,fs=None)
+benchmark('mov-rev-lr',d['BNB'],x,y,fs=None)
+benchmark('mov-rev-lr',d['RF'],x,y,fs=None)
+get_balanced_accuracy(d,x,y)
