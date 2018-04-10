@@ -171,7 +171,7 @@ test_tfidf = tfidf_vec.transform(test['comment_text'])
 ##mnb01_benchmarks = benchmark("multinomialNB-alpha-0.01",mnb01, train_tfidf, y)
 ##write_dict_to_csv(mnb01_benchmarks, 'model-benchmarks.csv')
 #highest 3-fold cv attained by alpah of 0.1 and 0.01, 0.1 took less time and will be used
-
+opt_d = {}
 #optimal models found
 optimal_lr = LogisticRegression(solver='sag',C=0.5, tol=0.01)    
 optimal_bnb = BernoulliNB(alpha=0.6)
@@ -180,12 +180,12 @@ optimal_rfc = RandomForestClassifier(n_estimators=15)
 ##get_auroc(optimal_lr, train_tfidf, y)
 ##get_auroc(optimal_bnb, bin_train, y)
 ##get_auroc(optimal_mnb, train_tfidf, y)
-d = collections.OrderedDict()
-d['LR'] = optimal_lr
-d['MNB'] = optimal_mnb
-d['BNB'] = optimal_bnb
-d['RF'] = optimal_rfc
-x_train, x_val, y_train, y_val = train_test_split(train_tfidf, y,test_size=0.4, random_state = 2)
+##d = collections.OrderedDict()
+##d['LR'] = optimal_lr
+##d['MNB'] = optimal_mnb
+##d['BNB'] = optimal_bnb
+##d['RF'] = optimal_rfc
+##x_train, x_val, y_train, y_val = train_test_split(train_tfidf, y,test_size=0.4, random_state = 2)
 ##lr_preds = get_prediction(x_train, y_train, x_val, model = optimal_lr)
 ##lr_probs = get_probability(x_train, y_train, x_val, model = optimal_lr)
 ##lr_preds.to_csv('val/lr_preds.csv',index=False)
@@ -206,8 +206,8 @@ x_train, x_val, y_train, y_val = train_test_split(train_tfidf, y,test_size=0.4, 
 ##rf_preds.to_csv('val/rf_preds.csv',index=False)
 ##rf_probs.to_csv('val/rf_probs.csv',index=False)
 
-true = y_val
-true.to_csv('val/true_labels.csv',index=False)
+##true = y_val
+##true.to_csv('val/true_labels.csv',index=False)
 
 #get_auroc(d, train_tfidf, y)
 #plot_cm(d,train_tfidf, y)

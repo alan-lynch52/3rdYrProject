@@ -54,6 +54,6 @@ d['e3'] = e3_probs
 d['e4'] = e4_probs
 
 get_auroc_ensemble(d,true_labels)
-
-d = round_dfs(d)
-plot_cm_ensemble(d,true_labels)
+#d = round_dfs(d)
+#get_balanced_accuracy_ensemble(d,true_labels)
+#plot_cm_ensemble(d,true_labels)

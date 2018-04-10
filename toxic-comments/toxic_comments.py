@@ -364,6 +364,23 @@ def get_balanced_accuracy_fs(fs_list, x, y):
         bacc_list[key] = bacc
     print(bacc_list)
     return bacc_list
+def get_balanced_accuracy_ensemble(ensemble_pred_list, y):
+    c_preds = np.array([])
+    c_true = np.array([])
+    bacc_list = {}
+    for key in ensemble_pred_list:
+        ensemble = ensemble_pred_list[key]
+        for label in y:
+            preds = ensemble[label]
+            true = y[label]
+            c_preds = np.append(c_preds, preds)
+            c_true = np.append(c_true, true)
+        #roc_auc is equivalent to balanced accuracy given binary preds and true labels
+        bacc = roc_auc_score(c_true, c_preds)
+        bacc = round(bacc,4)
+        bacc_list[key] = bacc
+    print(bacc_list)
+    return bacc_list
 def get_auroc(models, x, y):
     #split into train and validation set
     x_train, x_val, y_train, y_val = train_test_split(x, y, test_size = 0.4, random_state=2)
@@ -405,6 +422,9 @@ def get_auroc_fe(x_list, y):
     print(col)
     legend_names = list(x_list.keys())
     print(legend_names)
+    score_dict = {}
+    for key in x_list:
+        score_dict[key] = []
     for label in y:
         plt.subplot(row,col,index)
         plt.title(label)
@@ -421,8 +441,12 @@ def get_auroc_fe(x_list, y):
             score = roc_auc_score(y_val[label],preds)
             plt.plot(fpr,tpr, label=key)
             score = round(score,4)
+            score_dict[key].append(score)
             plt.legend(loc='lower right', prop = {'size':15})
         index += 1
+    for key in score_dict:
+        print(key)
+        print(np.mean(score_dict[key]))
     plt.tight_layout()
     plt.show()
 def get_auroc_fs(fs_list, x, y):
@@ -431,6 +455,9 @@ def get_auroc_fs(fs_list, x, y):
     col = size/2 if size > 1 and size%2 == 0 else int(size/2)+1
     row = size/2 if size > 1 and size%2 == 0 else int(size/2)+1
     legend_names = list(fs_list.keys())
+    score_dict = {}
+    for key in fs_list:
+        score_dict[key] = []
     for label in y:
         plt.subplot(row,col,index)
         plt.title(label)
@@ -444,7 +471,6 @@ def get_auroc_fs(fs_list, x, y):
             else:
                 sfm = SelectFromModel(fs, prefit=True)
                 new_x = sfm.transform(x)
-            print("FS Complete")
             x_train, x_val, y_train, y_val = train_test_split(new_x, y, test_size = 0.4, random_state=2)
             model.fit(x_train,y_train[label])
             preds = model.predict_proba(x_val)[:,1]
@@ -452,8 +478,10 @@ def get_auroc_fs(fs_list, x, y):
             score = roc_auc_score(y_val[label],preds)
             plt.plot(fpr,tpr, label=key)
             score = round(score, 4)
+            score_dict[key].append(score)
             plt.legend(loc="lower right", prop = {'size':15})
         index += 1
+    print(score_dict)
     plt.tight_layout()
     plt.show()
 def get_auroc_ensemble(ensemble_pred_list, true_list):
@@ -461,17 +489,26 @@ def get_auroc_ensemble(ensemble_pred_list, true_list):
     size = len(list(true_list))
     col = size/2 if size > 1 and size%2 == 0 else int(size/2)+1
     row = size/2 if size > 1 and size%2 == 0 else int(size/2)+1
+    score_dict = {}
+    for key in ensemble_pred_list:
+        score_dict[key] = []
     for label in true_list:
         plt.subplot(row, col, index)
         plt.title(label)
+        c_score = np.array([])
         for key in ensemble_pred_list:
             ensemble = ensemble_pred_list[key]
             preds = ensemble[label]
             true = true_list[label]
             fpr, tpr, th = roc_curve(true,preds)
+            score = roc_auc_score(true, preds)
+            score_dict[key].append(score)
             plt.plot(fpr, tpr, label=key)
             plt.legend(loc="lower right", prop = {'size':15})
         index += 1
+    for key in score_dict:
+        print(key)
+        print(np.mean(score_dict[key]))
     plt.tight_layout()
     plt.show()
 def barplot_benchmark(index, y, title, xticks, ylim=None):

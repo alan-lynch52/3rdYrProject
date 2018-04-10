@@ -40,8 +40,8 @@ d = collections.OrderedDict()
 d['TF-IDF-Base'] = train_tfidf
 d['Count-Best'] = count_train
 d['Binary'] = bin_train
-#get_auroc_fe(d,y)
-plot_cm_fe(d,y)
+get_auroc_fe(d,y)
+#plot_cm_fe(d,y)
 ##bin_benchmarks = benchmark("binary",model, bin_train, y)
 ##write_dict_to_csv(bin_benchmarks, 'benchmarks.csv')
 ##

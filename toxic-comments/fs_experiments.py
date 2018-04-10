@@ -91,7 +91,6 @@ k4 = int(num_features*0.75)
 ##sfm_preds = make_prediction(train_tfidf, y, test_tfidf, test_ids, fs=SelectFromModel(LogisticRegression(), threshold="0.1*mean"), model=model)
 ##rfe_preds = make_prediction(train_tfidf, y, test_tfidf, test_ids, fs=RFE(LogisticRegression(),step=1, n_features_to_select=None),model=model)
 ##kbest_preds = make_prediction(train_tfidf, y, test_tfidf, test_ids,fs = SelectKBest(chi2, k=k2), model=model)
-
 optimal_sfm = SelectFromModel(LogisticRegression(), threshold="0.1*mean")
 optimal_rfe = RFE(LogisticRegression(), step=0.05, n_features_to_select=None)
 optimal_kbest = SelectKBest(chi2, k=k2)
@@ -104,7 +103,7 @@ d['KBEST'] = optimal_kbest
 #d['B-RFE'] = RFE(LogisticRegression(), step=0.05)
 #d['B-KBEST'] = SelectKBest(chi2)
 
-#get_auroc_fs(d, train_tfidf, y)
+get_auroc_fs(d, train_tfidf, y)
 #plot_cm_fs(d, train_tfidf, y)
 get_balanced_accuracy_fs(d, train_tfidf, y)
 #to csv
