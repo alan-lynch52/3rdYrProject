@@ -59,17 +59,23 @@ model = LogisticRegression()
 ##stack_preds.to_csv('submission.csv',index=False)
 ##tfidf_stack_preds.to_csv('tfidf-stack-submission.csv',index=False)
 d = collections.OrderedDict()
-d['TFIDF+Count+Binary'] = hstack([train_tfidf, count_train, bin_train])
-d['TFIDF+Count'] = hstack([train_tfidf, count_train])
-d['TFIDF+Bin'] = hstack([train_tfidf, bin_train])
-d['Count+Bin'] = hstack([count_train, bin_train])
+d['stack1'] = hstack([train_tfidf, count_train, bin_train])
+d['stack2'] = hstack([train_tfidf, count_train])
+d['stack3'] = hstack([train_tfidf, bin_train])
+d['stack4'] = hstack([count_train, bin_train])
 del bin_train
 del count_train
 #GET TFIDF CHAR FEATURE
 char_vec = TfidfVectorizer(analyzer='char',ngram_range=(4,6),max_features=100000)
 char_vec.fit(df)
+train_tfidf_char_ngram = char_vec.transform(x['comment_text'])
+
+char_vec = TfidfVectorizer(analyzer='char',max_features=100000)
+char_vec.fit(df)
 train_tfidf_char = char_vec.transform(x['comment_text'])
+
 #test_tfidf_char = char_vec.transform(test['comment_text'])
-d['TFIDF1+TFIDF2'] = hstack([train_tfidf, train_tfidf_char])
+d['stack5'] = hstack([train_tfidf, train_tfidf_char])
+d['stack6'] = hstack([train_tfidf, train_tfidf_char_ngram])
 #get_auroc_fe(d,y)
 plot_cm_fe(d,y)

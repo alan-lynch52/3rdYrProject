@@ -364,6 +364,26 @@ def get_balanced_accuracy_fs(fs_list, x, y):
         bacc_list[key] = bacc
     print(bacc_list)
     return bacc_list
+def get_balanced_accuracy_fe(x_list, y):
+    model = LogisticRegression()
+    c_preds = np.array([])
+    c_true = np.array([])
+    bacc_list = {}
+    for key in x_list:
+        x = x_list[key]
+        for label in y:
+            x_train, x_val, y_train, y_val = train_test_split(x, y, test_size=0.4, random_state=2)
+            model.fit(x_train, y_train[label])
+            preds = model.predict(x_val)
+            true = y_val[label]
+            c_preds = np.append(c_preds, preds)
+            c_true = np.append(c_true, true)
+        #roc_auc is equivalent to balanced accuracy given binary preds and true labels
+        bacc = roc_auc_score(c_true, c_preds)
+        bacc = round(bacc,4)
+        bacc_list[key] = bacc
+    print(bacc_list)
+    return bacc_list
 def get_balanced_accuracy_ensemble(ensemble_pred_list, y):
     c_preds = np.array([])
     c_true = np.array([])
@@ -442,7 +462,7 @@ def get_auroc_fe(x_list, y):
             plt.plot(fpr,tpr, label=key)
             score = round(score,4)
             score_dict[key].append(score)
-            plt.legend(loc='lower right', prop = {'size':15})
+            plt.legend(loc='lower right', prop = {'size':12})
         index += 1
     for key in score_dict:
         print(key)
