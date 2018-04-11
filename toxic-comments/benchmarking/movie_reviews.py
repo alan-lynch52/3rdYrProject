@@ -36,32 +36,118 @@ import itertools
 import sys
 sys.path.insert(0, '..')
 from toxic_comments import *
-global CLASSES
-CLASSES = {
-    '0':'negative',
-    '1':'somewhat negative',
-    '2':'neutral',
-    '3':'somewhat positive',
-    '4':'positive',
-    }
-train = pd.read_csv("train.tsv", sep = "\t")
-x = train['Phrase']
-y = train['Sentiment']
-y = pd.get_dummies(y)
-#y = y.to_frame(name="Sentiment")
-tfidf_vec = TfidfVectorizer()
-x = tfidf_vec.fit_transform(x)
+def main():
+    global CLASSES
+    CLASSES = {
+        '0':'negative',
+        '1':'somewhat negative',
+        '2':'neutral',
+        '3':'somewhat positive',
+        '4':'positive',
+        }
+    train = pd.read_csv("train.tsv", sep = "\t")
+    x = train['Phrase']
+    y = train['Sentiment']
+    y = pd.get_dummies(y)
+    #y = y.to_frame(name="Sentiment")
+    tfidf_vec = TfidfVectorizer()
+    tfidf_train = tfidf_vec.fit_transform(x)
 
-d = collections.OrderedDict()
-d['LR'] = LogisticRegression()
-d['MNB'] = MultinomialNB()
-d['BNB'] = BernoulliNB()
-d['RF'] = RandomForestClassifier()
+##    tfidf_char_vec = TfidfVectorizer(analyzer='char')
+##    tfidf_char_train = tfidf_char_vec.fit_transform(x)
+##    
+##    count_vec = CountVectorizer()
+##    count_train = count_vec.fit_transform(x)
+##
+##    bin_vec = TfidfVectorizer(use_idf = False,norm = None, binary = True)
+##    bin_train = bin_vec.fit_transform(x)
 
-get_auroc(d,x,y)
-plot_cm(d,x,y)
-benchmark('mov-rev-lr',d['LR'],x,y,fs=None)
-benchmark('mov-rev-lr',d['MNB'],x,y,fs=None)
-benchmark('mov-rev-lr',d['BNB'],x,y,fs=None)
-benchmark('mov-rev-lr',d['RF'],x,y,fs=None)
-get_balanced_accuracy(d,x,y)
+    base_model = LogisticRegression()
+
+    d = collections.OrderedDict()
+    #STACKING
+##    tfidf_count_bin = hstack([tfidf_train, count_train, bin_train])
+##    tfidf_count = hstack([tfidf_train, count_train])
+##    tfidf_bin = hstack([tfidf_train, bin_train])
+##    tfidf_word_char = hstack([tfidf_train, tfidf_char_train])
+##    d['TFIDF-count-bin'] = tfidf_count_bin
+##    d['TFIDF-count'] = tfidf_count
+##    d['TFIDF-bin'] = tfidf_bin
+##    d['TFIDF-word-char'] = tfidf_word_char
+##
+##    benchmark('tfidf-count-bin',base_model,tfidf_count_bin,y,fs=None)
+##    benchmark('tfidf-count',base_model,tfidf_count,y,fs=None)
+##    benchmark('tfidf-bin',base_model,tfidf_bin,y,fs=None)
+##    benchmark('tfidf-word-char',base_model,tfidf_word_char,y,fs=None)
+##
+##    get_balanced_accuracy_fe(d,y)
+##    get_auroc_fe(d,y)
+    #plot_cm_fe(d,y)
+    #FEATURE SELECTION
+##    k = int(len(tfidf_vec.get_feature_names()) / 2)
+##    print(k)
+##    kbest = SelectKBest(chi2, k=k)
+##    rfe = RFE(base_model, step = 0.05)
+##    sfm = SelectFromModel(base_model)
+##    benchmark('kbest',base_model, tfidf_train, y, fs=kbest)
+##    benchmark('rfe',base_model, tfidf_train, y, fs=rfe)
+##    benchmark('sfm',base_model, tfidf_train, y, fs=sfm)
+##
+##    d['kbest'] = kbest
+##    d['rfe'] = rfe
+##    d['sfm'] = sfm
+##    
+##    get_balanced_accuracy_fs(d,tfidf_train, y)
+##    get_auroc_fs(d,tfidf_train, y)
+    #MODELING
+##    lr = LogisticRegression(C=0.5, tol=0.01)
+##    bnb = BernoulliNB(alpha = 1.0)
+##    mnb = MultinomialNB(alpha = 1.0)
+##    rf = RandomForestClassifier(n_estimators = 15)
+##    d['lr'] = lr
+##    d['bnb'] = bnb
+##    d['mnb'] = mnb
+##    d['rf'] = rf
+
+##    benchmark('lr', lr, tfidf_train, y)
+##    benchmark('bnb', bnb, tfidf_train, y)
+##    benchmark('mnb', mnb, tfidf_train, y)
+##    benchmark('rf', rf, tfidf_train, y)
+##    get_balanced_accuracy(d, tfidf_train, y)
+##    get_auroc(d, tfidf_train, y)
+
+##    x_train, x_val, y_train, y_val = train_test_split(tfidf_train, y, test_size=0.4, random_state = 2)
+##    get_probability(x_train, y_train, x_val, model = lr).to_csv('lr-prob.csv',index=False)
+##    get_prediction(x_train, y_train, x_val, model = lr).to_csv('lr-pred.csv',index=False)
+##
+##    get_probability(x_train, y_train, x_val, model = bnb).to_csv('bnb-prob.csv',index=False)
+##    get_prediction(x_train, y_train, x_val, model = bnb).to_csv('bnb-pred.csv',index=False)
+##
+##    get_probability(x_train, y_train, x_val, model = mnb).to_csv('mnb-prob.csv',index=False)
+##    get_prediction(x_train, y_train, x_val, model = mnb).to_csv('mnb-pred.csv',index=False)
+##
+##    get_probability(x_train, y_train, x_val, model = rf).to_csv('rf-prob.csv',index=False)
+##    get_prediction(x_train, y_train, x_val, model = rf).to_csv('rf-pred.csv',index=False)
+##
+##    y_val.to_csv('true-labels',index=False)
+
+    lr_pred = pd.read_csv('mov_rev/lr-pred.csv')
+    lr_prob = pd.read_csv('mov_rev/lr-prob.csv')
+
+    bnb_pred = pd.read_csv('mov_rev/bnb-pred.csv')
+    bnb_prob = pd.read_csv('mov_rev/bnb-prob.csv')
+
+    mnb_pred = pd.read_csv('mov_rev/mnb-pred.csv')
+    mnb_prob = pd.read_csv('mov_rev/mnb-prob.csv')
+    
+    rf_pred = pd.read_csv('mov_rev/rf-pred.csv')
+    rf_prob = pd.read_csv('mov_rev/rf-prob.csv')
+
+    LABELS = ['0','1','2','3','4']
+
+    ens_prob = lr_prob.copy()
+    ens_prob[LABELS] = (lr_prob[LABELS] + bnb_prob[LABELS] + mnb_prob[LABELS] + rf_prob[LABELS]) / 4
+    ens_prob.to_csv('e1.csv', index=False)
+    
+if __name__ == '__main__':
+    main()

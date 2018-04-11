@@ -417,6 +417,9 @@ def get_auroc(models, x, y):
     print(col)
     legend_names = list(models.keys())
     print(legend_names)
+    score_dict = {}
+    for key in models:
+        score_dict[key] = []
     for label in y:
         plt.subplot(row,col,index)
         plt.title(label)
@@ -428,9 +431,13 @@ def get_auroc(models, x, y):
             score = roc_auc_score(y_val[label],preds)
             plt.plot(fpr,tpr, label=key)
             score = round(score,4)
+            score_dict[key].append(score)
         #plt.annotate(score, xy=(0.5,0.5))
         plt.legend(loc='lower right', prop = {'size':15})
         index += 1
+    for key in score_dict:
+        print(key)
+        print(np.mean(score_dict[key]))
     plt.tight_layout()
     plt.show()
 def get_auroc_fe(x_list, y):
@@ -501,7 +508,9 @@ def get_auroc_fs(fs_list, x, y):
             score_dict[key].append(score)
             plt.legend(loc="lower right", prop = {'size':15})
         index += 1
-    print(score_dict)
+    for key in score_dict:
+        print(key)
+        print(np.mean(score_dict[key]))
     plt.tight_layout()
     plt.show()
 def get_auroc_ensemble(ensemble_pred_list, true_list):
