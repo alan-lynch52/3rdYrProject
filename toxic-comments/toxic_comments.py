@@ -8,8 +8,13 @@ from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.linear_model import LogisticRegression
 from sklearn.linear_model import RidgeClassifier
 from sklearn.linear_model import SGDClassifier
+from sklearn.svm import SVC
+from sklearn.svm import LinearSVC
+from sklearn.tree import DecisionTreeClassifier
 from sklearn.naive_bayes import *
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.ensemble import ExtraTreesClassifier
+from sklearn.discriminant_analysis import *
 from sklearn.model_selection import train_test_split
 from sklearn.model_selection import cross_val_score
 from sklearn.model_selection import GridSearchCV
@@ -21,7 +26,7 @@ from sklearn.feature_selection import RFE
 from sklearn.feature_selection import chi2
 from sklearn.feature_selection import mutual_info_classif
 from sklearn.feature_selection import SelectFromModel
-from sklearn.svm import SVC
+
 
 from scipy.sparse import csr_matrix
 from scipy.sparse import save_npz
@@ -136,7 +141,7 @@ def get_prediction(x, y, x_test, test_ids=None,fs=None,model=LogisticRegression(
     if test_ids != None:
         df = pd.concat([test_ids, df], axis=1)
     return df
-def benchmark(benchmark_name,model, x, y, fs=None):
+def benchmark(benchmark_name,model, x, y, fs=None,cv=3):
     benchmarks = {}
     start = time.time()
     for label in y:
@@ -151,7 +156,7 @@ def benchmark(benchmark_name,model, x, y, fs=None):
 
     #fitted_model = build_model(model, x_train, y_train)
     print(x.shape)
-    accuracy = score_cv_model(model, x, y, cv = None)
+    accuracy = score_cv_model(model, x, y, cv = cv)
     end = time.time()
     duration = end-start
     print("Benchmark Title: {0}".format(benchmark_name))
