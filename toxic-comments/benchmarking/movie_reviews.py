@@ -131,23 +131,33 @@ def main():
 ##
 ##    y_val.to_csv('true-labels',index=False)
 
-    lr_pred = pd.read_csv('mov_rev/lr-pred.csv')
-    lr_prob = pd.read_csv('mov_rev/lr-prob.csv')
+##    lr_prob = pd.read_csv('mov_rev/lr-prob.csv')
+##    bnb_prob = pd.read_csv('mov_rev/bnb-prob.csv')
+##    mnb_prob = pd.read_csv('mov_rev/mnb-prob.csv')
+##    rf_prob = pd.read_csv('mov_rev/rf-prob.csv')
 
-    bnb_pred = pd.read_csv('mov_rev/bnb-pred.csv')
-    bnb_prob = pd.read_csv('mov_rev/bnb-prob.csv')
+##    LABELS = ['0','1','2','3','4']
+##
+##    ens_prob = lr_prob.copy()
+##    ens_prob[LABELS] = (lr_prob[LABELS]*0.7 + bnb_prob[LABELS]*0.1 + mnb_prob[LABELS]*0.1 + rf_prob[LABELS]*0.1)
+##    ens_prob.to_csv('e4.csv', index=False)
 
-    mnb_pred = pd.read_csv('mov_rev/mnb-pred.csv')
-    mnb_prob = pd.read_csv('mov_rev/mnb-prob.csv')
-    
-    rf_pred = pd.read_csv('mov_rev/rf-pred.csv')
-    rf_prob = pd.read_csv('mov_rev/rf-prob.csv')
+    e1 = pd.read_csv('mov_rev/e1.csv')
+    e2 = pd.read_csv('mov_rev/e2.csv')
+    e3 = pd.read_csv('mov_rev/e3.csv')
+    e4 = pd.read_csv('mov_rev/e4.csv')
+    true = pd.read_csv('mov_rev/true-labels.csv')
+##    e1 = e1.round(0)
+##    e2 = e2.round(0)
+##    e3 = e3.round(0)
+##    e4 = e4.round(0)
 
-    LABELS = ['0','1','2','3','4']
-
-    ens_prob = lr_prob.copy()
-    ens_prob[LABELS] = (lr_prob[LABELS] + bnb_prob[LABELS] + mnb_prob[LABELS] + rf_prob[LABELS]) / 4
-    ens_prob.to_csv('e1.csv', index=False)
+    d['e1'] = e1
+    d['e2'] = e2
+    d['e3'] = e3
+    d['e4'] = e4
+##    get_balanced_accuracy_ensemble(d,true)
+    get_auroc_ensemble(d, true)
     
 if __name__ == '__main__':
     main()
