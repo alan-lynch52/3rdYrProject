@@ -45,7 +45,7 @@ def main():
         '3':'somewhat positive',
         '4':'positive',
         }
-    train = pd.read_csv("train.tsv", sep = "\t")
+    train = pd.read_csv("movie_reviews_train.tsv", sep = "\t")
     x = train['Phrase']
     y = train['Sentiment']
     y = pd.get_dummies(y)
@@ -82,7 +82,6 @@ def main():
 ##
 ##    get_balanced_accuracy_fe(d,y)
 ##    get_auroc_fe(d,y)
-    #plot_cm_fe(d,y)
     #FEATURE SELECTION
 ##    k = int(len(tfidf_vec.get_feature_names()) / 2)
 ##    print(k)
