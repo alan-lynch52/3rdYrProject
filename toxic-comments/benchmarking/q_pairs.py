@@ -18,19 +18,19 @@ def main():
 
     tfidf_q1 = tfidf_vec.fit_transform(q1)
     tfidf_q2 = tfidf_vec.fit_transform(q2)
-##    count_q1 = count_vec.fit_transform(q1)
-##    count_q2 = count_vec.fit_transform(q2)
-##    bin_q1 = bin_vec.fit_transform(q1)
-##    bin_q2 = bin_vec.fit_transform(q2)
-##    char_q1 = char_vec.fit_transform(q1)
-##    char_q2 = char_vec.fit_transform(q2)
+    count_q1 = count_vec.fit_transform(q1)
+    count_q2 = count_vec.fit_transform(q2)
+    bin_q1 = bin_vec.fit_transform(q1)
+    bin_q2 = bin_vec.fit_transform(q2)
+    char_q1 = char_vec.fit_transform(q1)
+    char_q2 = char_vec.fit_transform(q2)
     base_model = LogisticRegression()
     d = collections.OrderedDict()
     #Feature Extraction
     tfidf_train = hstack([tfidf_q1,tfidf_q2])
-##    count_train = hstack([count_q1, count_q2])
-##    bin_train = hstack([bin_q1, bin_q2])
-##    char_train = hstack([char_q1,char_q2])
+    count_train = hstack([count_q1, count_q2])
+    bin_train = hstack([bin_q1, bin_q2])
+    char_train = hstack([char_q1,char_q2])
 
 ##    d['TFIDF'] = tfidf_train
 ##    d['Count'] = count_train
@@ -42,17 +42,17 @@ def main():
 ##    get_balanced_accuracy_fe(d,y)
 
     #Feature Stacking
-##    d['TFIDF-count-bin'] = hstack([tfidf_train,count_train,bin_train])
-##    d['TFIDF-count'] = hstack([tfidf_train, count_train])
-##    d['TFIDF-bin'] = hstack([tfidf_train, bin_train])
-##    d['TFIDF-word-char'] = hstack([tfidf_train, char_train])
-##
-##    benchmark('TFIDF-count-bin', base_model, d['TFIDF-count-bin'],y)
-##    benchmark('TFIDF-count', base_model, d['TFIDF-bin'], y)
-##    benchmark('TFIDF-bin', base_model, d['TFIDF-word-char'], y)
-##    benchmark('TFIDF-word-char', base_model, d['TFIDF-word-char'],y)
-##    get_auroc_fe(d,y)
-##    get_balanced_accuracy_fe(d,y)
+    d['TFIDF-count-bin'] = hstack([tfidf_train,count_train,bin_train])
+    d['TFIDF-count'] = hstack([tfidf_train, count_train])
+    d['TFIDF-bin'] = hstack([tfidf_train, bin_train])
+    d['TFIDF-word-char'] = hstack([tfidf_train, char_train])
+
+    ##benchmark('TFIDF-count-bin', base_model, d['TFIDF-count-bin'],y)
+    benchmark('TFIDF-count', base_model, d['TFIDF-count'], y)
+    benchmark('TFIDF-bin', base_model, d['TFIDF-bin'], y)
+    benchmark('TFIDF-word-char', base_model, d['TFIDF-word-char'],y)
+    get_auroc_fe(d,y)
+    get_balanced_accuracy_fe(d,y)
 
     #Feature Selection
 ##    k = int(len(tfidf_vec.get_feature_names()) / 2)
@@ -103,19 +103,19 @@ def main():
 ##    ens_prob = lr_prob.copy()
 ##    ens_prob[LABELS] = (lr_prob[LABELS] + bnb_prob[LABELS]) / 2
 ##    ens_prob.to_csv('q_pairs/e3.csv', index=False)
-
-    e1 = pd.read_csv('q_pairs/e1.csv')
-    e2 = pd.read_csv('q_pairs/e2.csv')
-    e3 = pd.read_csv('q_pairs/e3.csv')
-    e4 = pd.read_csv('q_pairs/e4.csv')
-    true = pd.read_csv('q_pairs/true-labels.csv')
-
-    d['e1'] = e1
-    d['e2'] = e2
-    d['e3'] = e3
-    d['e4'] = e4
-    get_auroc_ensemble(d, true)
-    get_balanced_accuracy_ensemble(d,true)
+##
+##    e1 = pd.read_csv('q_pairs/e1.csv')
+##    e2 = pd.read_csv('q_pairs/e2.csv')
+##    e3 = pd.read_csv('q_pairs/e3.csv')
+##    e4 = pd.read_csv('q_pairs/e4.csv')
+##    true = pd.read_csv('q_pairs/true-labels.csv')
+##
+##    d['e1'] = e1
+##    d['e2'] = e2
+##    d['e3'] = e3
+##    d['e4'] = e4
+##    get_auroc_ensemble(d, true)
+##    get_balanced_accuracy_ensemble(d,true)
     
 if __name__ == '__main__':
     main()
