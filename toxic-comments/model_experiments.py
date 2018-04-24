@@ -25,7 +25,7 @@ bin_train = binary_vec.transform(x['comment_text'])
 bin_test = binary_vec.transform(test['comment_text'])
 
 #GET TFIDF FEATURE
-tfidf_vec = TfidfVectorizer()
+tfidf_vec = TfidfVectorizer(max_features=20000)
 tfidf_vec.fit(df)
 train_tfidf = tfidf_vec.transform(x['comment_text'])
 test_tfidf = tfidf_vec.transform(test['comment_text'])
@@ -171,15 +171,17 @@ test_tfidf = tfidf_vec.transform(test['comment_text'])
 ##mnb01_benchmarks = benchmark("multinomialNB-alpha-0.01",mnb01, train_tfidf, y)
 ##write_dict_to_csv(mnb01_benchmarks, 'model-benchmarks.csv')
 #highest 3-fold cv attained by alpah of 0.1 and 0.01, 0.1 took less time and will be used
-opt_d = {}
+c_list = [0.01,0.1,0.25,0.5,0.75,1.0]
+
+for c in c_list:
+    svm = SVC(C=c,probability=True)
+    benchmark('svc-'+str(c),svm,train_tfidf, y)
+    
 #optimal models found
 optimal_lr = LogisticRegression(solver='sag',C=0.5, tol=0.01)    
 optimal_bnb = BernoulliNB(alpha=0.6)
 optimal_mnb = MultinomialNB(alpha=0.1)
 optimal_rfc = RandomForestClassifier(n_estimators=15)
-##get_auroc(optimal_lr, train_tfidf, y)
-##get_auroc(optimal_bnb, bin_train, y)
-##get_auroc(optimal_mnb, train_tfidf, y)
 ##d = collections.OrderedDict()
 ##d['LR'] = optimal_lr
 ##d['MNB'] = optimal_mnb

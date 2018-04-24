@@ -14,6 +14,9 @@ from sklearn.tree import DecisionTreeClassifier
 from sklearn.naive_bayes import *
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.ensemble import ExtraTreesClassifier
+from sklearn.ensemble import BaggingClassifier
+from sklearn.ensemble import AdaBoostClassifier
+from sklearn.ensemble import GradientBoostingClassifier
 from sklearn.discriminant_analysis import *
 from sklearn.model_selection import train_test_split
 from sklearn.model_selection import cross_val_score
