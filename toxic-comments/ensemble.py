@@ -75,33 +75,34 @@ def main():
     ##d['e4'] = e4_probs
 
     clf = LogisticRegression(solver='sag',C=0.5, tol=0.01)
+    max_depth = int(train_tfidf.shape[1] / 2)
 ##    n_estimators = [10,25,50,100]
 ##    for n in n_estimators:
 ##        bag_lr = BaggingClassifier(base_estimator=clf, n_estimators=n)
 ##        benchmark(str(n),bag_lr, train_tfidf, y)
     #OPTIMAL BAGGING N = 25
 ##    for n in n_estimators:
-##        ada_lr = AdaBoostClassifier(base_estimator=clf, n_estimators=n)
-##        benchmark('AdaBoost-'+str(n),ada_lr, train_tfidf, y)
+##        ada_lr = ExtraTreesClassifier(n_estimators=n)
+##        benchmark('ET-'+str(n),ada_lr, train_tfidf, y)
     #ALL N ACHIEVED SAME ACCURACY, N=10
 ##    for n in n_estimators:
 ##        gb = GradientBoostingClassifier(n_estimators=n)
 ##        benchmark('GB-'+str(n),gb,train_tfidf,y)
 
-    ada_lr = AdaBoostClassifier(base_estimator=clf, n_estimators=25)
+    et = ExtraTreesClassifier(n_estimators=10)
     bag_lr = BaggingClassifier(base_estimator=clf, n_estimators=25)
     rf = RandomForestClassifier(n_estimators=15)
     gb = GradientBoostingClassifier(n_estimators=10)
     d = collections.OrderedDict()
-    d['adaboost'] = ada_lr
-    d['bagging'] = bag_lr
-    d['rf'] = rf
-    d['gb'] = gb
-    #get_auroc(d,train_tfidf,y)
-    #get_balanced_accuracy(d,train_tfidf, y)
-    #plot_cm_ensemble(d,true_labels)
+    d['ET'] = et
+    d['Bagging'] = bag_lr
+    d['RF'] = rf
+    d['GB'] = gb
+    get_auroc(d,train_tfidf,y)
+    get_balanced_accuracy(d,train_tfidf, y)
+    plot_cm(d,train_tfidf, y)
 
-    get_probability(train_tfidf, y, test_tfidf, test_ids, model=ada_lr).to_csv('ada-submission.csv',index=False)
+    get_probability(train_tfidf, y, test_tfidf, test_ids, model=et).to_csv('et-submission.csv',index=False)
     get_probability(train_tfidf, y, test_tfidf, test_ids, model=bag_lr).to_csv('bag-submission.csv',index=False)
     #get_probability(train_tfidf, y, test_tfidf, test_ids, model=rf).to_csv('rf-submission.csv',index=False)
     get_probability(train_tfidf, y, test_tfidf, test_ids, model=gb).to_csv('gb-submission.csv',index=False)
