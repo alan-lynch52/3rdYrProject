@@ -98,9 +98,9 @@ def main():
     d['Bagging'] = bag_lr
     d['RF'] = rf
     d['GB'] = gb
-    get_auroc(d,train_tfidf,y)
-    get_balanced_accuracy(d,train_tfidf, y)
-    plot_cm(d,train_tfidf, y)
+##    get_auroc(d,train_tfidf,y)
+##    get_balanced_accuracy(d,train_tfidf, y)
+##    plot_cm(d,train_tfidf, y)
 
     get_probability(train_tfidf, y, test_tfidf, test_ids, model=et).to_csv('et-submission.csv',index=False)
     get_probability(train_tfidf, y, test_tfidf, test_ids, model=bag_lr).to_csv('bag-submission.csv',index=False)

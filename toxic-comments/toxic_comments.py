@@ -117,7 +117,7 @@ def get_probability(x, y, x_test, test_ids=None,fs=None,model=LogisticRegression
         pred = model.predict_proba(new_x_test)[:,1]
         pred_dict[label] = pred
     df = pd.DataFrame.from_dict(data = pred_dict)
-    if test_ids != None:
+    if test_ids is not None:
         df = pd.concat([test_ids, df], axis=1)
     return df
 def get_prediction(x, y, x_test, test_ids=None,fs=None,model=LogisticRegression()):
@@ -142,7 +142,7 @@ def get_prediction(x, y, x_test, test_ids=None,fs=None,model=LogisticRegression(
         pred = model.predict(new_x_test)
         pred_dict[label] = pred
     df = pd.DataFrame.from_dict(data = pred_dict)
-    if test_ids != None:
+    if test_ids is not None:
         df = pd.concat([test_ids, df], axis=1)
     return df
 def benchmark(benchmark_name,model, x, y, fs=None,cv=3):
