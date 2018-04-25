@@ -12,25 +12,25 @@ def main():
     del train
     #df = pd.concat([q1,q2], axis=1, keys = ['question1','question2'])
     tfidf_vec = TfidfVectorizer()
-    char_vec = TfidfVectorizer(analyzer='char')
-    count_vec = CountVectorizer()
-    bin_vec = TfidfVectorizer(use_idf=False, norm=None, binary=True)
+##    char_vec = TfidfVectorizer(analyzer='char')
+##    count_vec = CountVectorizer()
+##    bin_vec = TfidfVectorizer(use_idf=False, norm=None, binary=True)
 
     tfidf_q1 = tfidf_vec.fit_transform(q1)
     tfidf_q2 = tfidf_vec.fit_transform(q2)
-    count_q1 = count_vec.fit_transform(q1)
-    count_q2 = count_vec.fit_transform(q2)
-    bin_q1 = bin_vec.fit_transform(q1)
-    bin_q2 = bin_vec.fit_transform(q2)
-    char_q1 = char_vec.fit_transform(q1)
-    char_q2 = char_vec.fit_transform(q2)
-    base_model = LogisticRegression()
+##    count_q1 = count_vec.fit_transform(q1)
+##    count_q2 = count_vec.fit_transform(q2)
+##    bin_q1 = bin_vec.fit_transform(q1)
+##    bin_q2 = bin_vec.fit_transform(q2)
+##    char_q1 = char_vec.fit_transform(q1)
+##    char_q2 = char_vec.fit_transform(q2)
+##    base_model = LogisticRegression()
     d = collections.OrderedDict()
     #Feature Extraction
-    tfidf_train = hstack([tfidf_q1,tfidf_q2])
-    count_train = hstack([count_q1, count_q2])
-    bin_train = hstack([bin_q1, bin_q2])
-    char_train = hstack([char_q1,char_q2])
+##    tfidf_train = hstack([tfidf_q1,tfidf_q2])
+##    count_train = hstack([count_q1, count_q2])
+##    bin_train = hstack([bin_q1, bin_q2])
+##    char_train = hstack([char_q1,char_q2])
 
 ##    d['TFIDF'] = tfidf_train
 ##    d['Count'] = count_train
@@ -116,6 +116,20 @@ def main():
 ##    d['e4'] = e4
 ##    get_auroc_ensemble(d, true)
 ##    get_balanced_accuracy_ensemble(d,true)
-    
+    et = ExtraTreesClassifier(n_estimators=10)
+    bag_lr = BaggingClassifier(base_estimator=LogisticRegression(solver='sag',C=0.5, tol=0.01), n_estimators=25)
+    rf = RandomForestClassifier(n_estimators=15)
+    gb = GradientBoostingClassifier(n_estimators=10)
+    d = collections.OrderedDict()
+    d['ET'] = et
+    d['Bagging'] = bag_lr
+    d['RF'] = rf
+    d['GB'] = gb
+    benchmark('ET',et,tfidf_train,y)
+    benchmark('Bagging',et,tfidf_train,y)
+    benchmark('RF',rf,tfidf_train,y)
+    benchmark('GB',gb,tfidf_train,y)
+    get_auroc(d,tfidf_train,y)
+    get_balanced_accuracy(d,tfidf_train, y)
 if __name__ == '__main__':
     main()

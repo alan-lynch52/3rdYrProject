@@ -104,27 +104,42 @@ def main():
 ##    get_probability(x_train, y_train, x_val, model = rf).to_csv('search_rel/rf-prob.csv',index=False)
 ##    y_val.to_csv('search_rel/true-labels.csv',index=False)
 
-    lr_prob = pd.read_csv('search_rel/lr-prob.csv')
-    bnb_prob = pd.read_csv('search_rel/bnb-prob.csv')
-    mnb_prob = pd.read_csv('search_rel/mnb-prob.csv')
-    rf_prob = pd.read_csv('search_rel/rf-prob.csv')
+##    lr_prob = pd.read_csv('search_rel/lr-prob.csv')
+##    bnb_prob = pd.read_csv('search_rel/bnb-prob.csv')
+##    mnb_prob = pd.read_csv('search_rel/mnb-prob.csv')
+##    rf_prob = pd.read_csv('search_rel/rf-prob.csv')
 
 ##    LABELS = ['rel_1','rel_2','rel_3','rel_4']
 ##    ens_prob = lr_prob.copy()
 ##    ens_prob[LABELS] = (lr_prob[LABELS] + bnb_prob[LABELS]) / 2
 ##    ens_prob.to_csv('search_rel/e3.csv', index=False)
 
-    e1 = pd.read_csv('search_rel/e1.csv')
-    e2 = pd.read_csv('search_rel/e2.csv')
-    e3 = pd.read_csv('search_rel/e3.csv')
-    e4 = pd.read_csv('search_rel/e4.csv')
-    true = pd.read_csv('search_rel/true-labels.csv')
-    
-    d['e1'] = e1
-    d['e2'] = e2
-    d['e3'] = e3
-    d['e4'] = e4
-    get_auroc_ensemble(d, true)
-    get_balanced_accuracy_ensemble(d,true)
+##    e1 = pd.read_csv('search_rel/e1.csv')
+##    e2 = pd.read_csv('search_rel/e2.csv')
+##    e3 = pd.read_csv('search_rel/e3.csv')
+##    e4 = pd.read_csv('search_rel/e4.csv')
+##    true = pd.read_csv('search_rel/true-labels.csv')
+##    
+##    d['e1'] = e1
+##    d['e2'] = e2
+##    d['e3'] = e3
+##    d['e4'] = e4
+##    get_auroc_ensemble(d, true)
+##    get_balanced_accuracy_ensemble(d,true)
+    et = ExtraTreesClassifier(n_estimators=10)
+    bag_lr = BaggingClassifier(base_estimator=LogisticRegression(solver='sag',C=0.5, tol=0.01), n_estimators=25)
+    rf = RandomForestClassifier(n_estimators=15)
+    gb = GradientBoostingClassifier(n_estimators=10)
+    d = collections.OrderedDict()
+    d['ET'] = et
+    d['Bagging'] = bag_lr
+    d['RF'] = rf
+    d['GB'] = gb
+    benchmark('ET',et,tfidf_train,y)
+    benchmark('Bagging',et,tfidf_train,y)
+    benchmark('RF',rf,tfidf_train,y)
+    benchmark('GB',gb,tfidf_train,y)
+    get_auroc(d,tfidf_train,y)
+    get_balanced_accuracy(d,tfidf_train, y)
 if __name__ == '__main__':
     main()
