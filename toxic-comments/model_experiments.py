@@ -171,28 +171,21 @@ def main():
     ##mnb01_benchmarks = benchmark("multinomialNB-alpha-0.01",mnb01, train_tfidf, y)
     ##write_dict_to_csv(mnb01_benchmarks, 'model-benchmarks.csv')
     #highest 3-fold cv attained by alpah of 0.1 and 0.01, 0.1 took less time and will be used
-
-    c_list = [0.01,0.1,0.25,0.5,0.75,1.0]
-
-    for c in c_list:
-        svm = SVC(C=c,kernel='linear',probability=True)
-        benchmark('svc-'+str(c),svm,train_tfidf, y)
-        
+ 
     #optimal models found
-##    optimal_lr = LogisticRegression(solver='sag',C=0.5, tol=0.01)    
-##    optimal_bnb = BernoulliNB(alpha=0.6)
-##    optimal_mnb = MultinomialNB(alpha=0.1)
-##    optimal_svc = LinearSVC(C=0.5)
-##    d = collections.OrderedDict()
-##    d['LR'] = optimal_lr
-##    d['MNB'] = optimal_mnb
-##    d['BNB'] = optimal_bnb
-##    d['svc'] = optimal_svc
-##
-##
-##    get_auroc(d, train_tfidf, y)
-##    plot_cm(d,train_tfidf, y)
-##    get_balanced_accuracy(d,train_tfidf, y)
+    optimal_lr = LogisticRegression(solver='sag',C=0.5, tol=0.01)    
+    optimal_bnb = BernoulliNB(alpha=0.6)
+    optimal_mnb = MultinomialNB(alpha=0.1)
+
+    d = collections.OrderedDict()
+    d['LR'] = optimal_lr
+    d['MNB'] = optimal_mnb
+    d['BNB'] = optimal_bnb
+
+
+    get_auroc(d, train_tfidf, y)
+    plot_cm(d,train_tfidf, y)
+    get_balanced_accuracy(d,train_tfidf, y)
 
     ###benchmark optimal models
     ##lr_benchmarks = benchmark('lr-solver-sag-c-0.5-tol-0.01',optimal_lr, train_tfidf, y)

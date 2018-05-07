@@ -9,7 +9,7 @@ def main():
     y = train['target']
     y = y.to_frame(name="target")
     x = train.drop('target', axis = 1)
-
+    print(x.head())
     base_model = LogisticRegression()
     #Feature Selection
 ##    k = int(x.shape[1]/2)
@@ -32,16 +32,17 @@ def main():
 
     #modelling
     lr = LogisticRegression()
-    svc = LinearSVC()
-    gnb = GaussianNB()
+    mnb = MultinomialNB()
+    bnb = BernoulliNB()
     d = collections.OrderedDict()
     d['lr'] = lr
-    d['svc'] = svc
-    d['gnb'] = gnb
+    d['bnb'] = bnb
+    d['mnb'] = mnb
     benchmark('lr',lr, x, y)
-    benchmark('gnb',gnb, x, y)
-    benchmark('svc', svc, x, y)
-    get_balanced_accuracy(d,x,y)
+    benchmark('bnb',bnb,x,y)
+    benchmark('mnb', mnb, x, y)
+
     get_auroc(d,x,y)
+    get_balanced_accuracy(d,x,y)
 if __name__ == '__main__':
     main()

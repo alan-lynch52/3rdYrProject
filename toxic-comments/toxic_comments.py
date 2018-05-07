@@ -31,7 +31,6 @@ from sklearn.feature_selection import chi2
 from sklearn.feature_selection import mutual_info_classif
 from sklearn.feature_selection import SelectFromModel
 
-
 from scipy.sparse import csr_matrix
 from scipy.sparse import save_npz
 from scipy.sparse import hstack
@@ -68,6 +67,8 @@ def main():
     bin_test = binary_vec.transform(test['comment_text'])
 
     #GET TFIDF FEATURE
+    print(df.shape)
+    
     tfidf_vec = TfidfVectorizer()
     tfidf_vec.fit(df)
     train_tfidf = tfidf_vec.transform(x['comment_text'])
@@ -333,13 +334,13 @@ def plot_cm_fe(x_list, y):
     plt.tight_layout()
     plt.show()
 def get_balanced_accuracy(models, x, y):
-    x_train, x_val, y_train, y_val = train_test_split(x, y, test_size=0.4, random_state=2)
     c_preds = np.array([])
     c_true = np.array([])
     bacc_list = {}
     for key in models:
         model = models[key]
         for label in y:
+            x_train, x_val, y_train, y_val = train_test_split(x, y, test_size=0.5)
             model.fit(x_train, y_train[label])
             preds = model.predict(x_val)
             true = y_val[label]
@@ -353,24 +354,24 @@ def get_balanced_accuracy(models, x, y):
     return bacc_list
 def get_balanced_accuracy_fs(fs_list, x, y):
     model = LogisticRegression()
-    c_preds = np.array([])
-    c_true = np.array([])
     bacc_list = {}
     for key in fs_list:
+        c_preds = np.array([])
+        c_true = np.array([])
         fs = fs_list[key]
         for label in y:
             fs.fit(x,y[label])
             new_x = fs.transform(x)
-            x_train, x_val, y_train, y_val = train_test_split(new_x, y, test_size=0.4, random_state=2)
+            x_train, x_val, y_train, y_val = train_test_split(new_x, y, test_size=0.5)
             model.fit(x_train, y_train[label])
             preds = model.predict(x_val)
             true = y_val[label]
             c_preds = np.append(c_preds, preds)
-            c_true = np.append(c_true, true)
-        #roc_auc is equivalent to balanced accuracy given binary preds and true labels
-        bacc = roc_auc_score(c_true, c_preds)
-        bacc = round(bacc,4)
-        bacc_list[key] = bacc
+            c_true = np.append(c_true, true)           
+                #roc_auc is equivalent to balanced accuracy given binary preds and true labels
+            bacc = roc_auc_score(c_true, c_preds)
+            bacc = round(bacc,4)
+            bacc_list[key] = bacc
     print(bacc_list)
     return bacc_list
 def get_balanced_accuracy_fe(x_list, y):
@@ -381,7 +382,7 @@ def get_balanced_accuracy_fe(x_list, y):
     for key in x_list:
         x = x_list[key]
         for label in y:
-            x_train, x_val, y_train, y_val = train_test_split(x, y, test_size=0.4, random_state=2)
+            x_train, x_val, y_train, y_val = train_test_split(x, y, test_size=0.5)
             model.fit(x_train, y_train[label])
             preds = model.predict(x_val)
             true = y_val[label]
@@ -412,7 +413,6 @@ def get_balanced_accuracy_ensemble(ensemble_pred_list, y):
     return bacc_list
 def get_auroc(models, x, y):
     #split into train and validation set
-    x_train, x_val, y_train, y_val = train_test_split(x, y, test_size = 0.4, random_state=2)
     #train each label
     #predict each label
     d = {}
@@ -433,13 +433,14 @@ def get_auroc(models, x, y):
         plt.subplot(row,col,index)
         plt.title(label)
         for key in models:
+            x_train, x_val, y_train, y_val = train_test_split(x, y, test_size = 0.5)
             model = models[key]
             model.fit(x_train, y_train[label])
             preds = model.predict_proba(x_val)[:,1]
             fpr, tpr, th = roc_curve(y_val[label],preds)
             score = roc_auc_score(y_val[label],preds)
             plt.plot(fpr,tpr, label=key)
-            score = round(score,4)
+            #score = round(score,4)
             score_dict[key].append(score)
         #plt.annotate(score, xy=(0.5,0.5))
         plt.legend(loc='lower right', prop = {'size':15})
@@ -449,6 +450,7 @@ def get_auroc(models, x, y):
         print(np.mean(score_dict[key]))
     plt.tight_layout()
     plt.show()
+    return score_dict
 def get_auroc_fe(x_list, y):
     index = 1
     size = len(list(y))
@@ -468,7 +470,7 @@ def get_auroc_fe(x_list, y):
             model = LogisticRegression()
             x = x_list[key]
             #split into train and validation set
-            x_train, x_val, y_train, y_val = train_test_split(x, y, test_size = 0.4, random_state=2)
+            x_train, x_val, y_train, y_val = train_test_split(x, y, test_size = 0.5)
             #train each label
             #predict each label
             model.fit(x_train, y_train[label])
@@ -507,7 +509,7 @@ def get_auroc_fs(fs_list, x, y):
             else:
                 sfm = SelectFromModel(fs, prefit=True)
                 new_x = sfm.transform(x)
-            x_train, x_val, y_train, y_val = train_test_split(new_x, y, test_size = 0.4, random_state=2)
+            x_train, x_val, y_train, y_val = train_test_split(new_x, y, test_size = 0.5)
             model.fit(x_train,y_train[label])
             preds = model.predict_proba(x_val)[:,1]
             fpr, tpr, th = roc_curve(y_val[label],preds)

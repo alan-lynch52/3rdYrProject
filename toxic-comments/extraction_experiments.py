@@ -1,8 +1,7 @@
 from toxic_comments import *
 
 train = pd.read_csv("train.csv")
-#test = pd.read_csv("test.csv")
-
+test = pd.read_csv("test.csv")
 ##import warnings
 ##warnings.filterwarnings("ignore")
 y = train.iloc[:,2:]

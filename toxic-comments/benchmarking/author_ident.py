@@ -1,4 +1,4 @@
-#https://www.kaggle.com/c/porto-seguro-safe-driver-prediction
+#https://www.kaggle.com/c/spooky-author-identification
 import sys
 sys.path.insert(0, '..')
 
