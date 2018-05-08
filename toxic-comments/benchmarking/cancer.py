@@ -5,9 +5,13 @@ from sklearn.datasets import load_breast_cancer
 from sklearn.preprocessing import StandardScaler
 
 def main():
+    #load breast cancer dataset from scikit learn
     data = load_breast_cancer()
+    #split into x and y
     x = pd.DataFrame(data.data, columns=data.feature_names)
     y = pd.DataFrame(data.target, columns=['target'])
+
+    #standardize data
     scaler = StandardScaler()
     x = scaler.fit_transform(x)
 

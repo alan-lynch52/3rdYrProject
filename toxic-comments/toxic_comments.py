@@ -41,6 +41,7 @@ import json
 import csv
 import collections
 import itertools
+#Old testing done in the main
 def main():
     train = pd.read_csv("train.csv")
     test = pd.read_csv("test.csv")
@@ -95,7 +96,7 @@ def main():
     
     #WRITE TO CSV
 
-    
+#function used to get probabilities
 def get_probability(x, y, x_test, test_ids=None,fs=None,model=LogisticRegression()):
     print(x_test.shape)
     print(x.shape)
@@ -121,6 +122,7 @@ def get_probability(x, y, x_test, test_ids=None,fs=None,model=LogisticRegression
     if test_ids is not None:
         df = pd.concat([test_ids, df], axis=1)
     return df
+#function used to get predictions, rarely used
 def get_prediction(x, y, x_test, test_ids=None,fs=None,model=LogisticRegression()):
     print(x_test.shape)
     print(x.shape)
@@ -146,6 +148,7 @@ def get_prediction(x, y, x_test, test_ids=None,fs=None,model=LogisticRegression(
     if test_ids is not None:
         df = pd.concat([test_ids, df], axis=1)
     return df
+#function to gain 3 results: 3-Fold CV Accuracy, time taken and number of features
 def benchmark(benchmark_name,model, x, y, fs=None,cv=3):
     benchmarks = {}
     start = time.time()
@@ -158,7 +161,6 @@ def benchmark(benchmark_name,model, x, y, fs=None,cv=3):
                 sfm = SelectFromModel(fs, prefit=True)
                 x = sfm.transform(x)
     #x_train, x_val, y_train, y_val = train_test_split(new_x, y, test_size = 0.1, random_state= 2)
-
     #fitted_model = build_model(model, x_train, y_train)
     print(x.shape)
     accuracy = score_cv_model(model, x, y, cv = cv)
@@ -173,17 +175,22 @@ def benchmark(benchmark_name,model, x, y, fs=None,cv=3):
     benchmarks['num_attributes'] = x.shape[1]
     benchmarks['duration'] = round(duration,2)
     return benchmarks
+#Functions used to make normalized confusion matrices
 def plot_cm(models, x, y):
+    #split into train and test
     x_train, x_val, y_train, y_val = train_test_split(x, y, test_size=0.4, random_state=2)
     index = 1
+    #used to find out number of subplots needed
     size = len(list(models))
     col = size/2 if size > 1 and size%2 == 0 else int(size/2)+1
     row = size/2 if size > 1 and size%2 == 0 else int(size/2)+1
     print(row)
     print(col)
+    #iterate through models in dictionary
     for key in models:
         c_preds = np.array([])
         c_true = np.array([])
+        #fit model for each label in y, add predictions and condition trues to np array
         for label in y:
             model = models[key]
             model.fit(x_train, y_train[label])
@@ -191,7 +198,9 @@ def plot_cm(models, x, y):
             true = y_val[label]
             c_preds = np.append(c_preds,preds)
             c_true = np.append(c_true,true)
+        #produce confusion matrix
         cm = confusion_matrix(c_true,c_preds)
+        #normalize
         cm = cm.astype('float') / cm.sum(axis=1)[:,np.newaxis]
         plt.subplot(row, col, index)
         plt.imshow(cm,interpolation="nearest",cmap=plt.cm.Blues)
@@ -207,6 +216,7 @@ def plot_cm(models, x, y):
         plt.yticks(ticks,conds)
         thresh = cm.max() / 2
         fmt = '.2f'
+        #add text to plot
         for i, j in itertools.product(range(cm.shape[0]), range(cm.shape[1])):
             plt.text(j, i, format(cm[i, j], fmt),
                      horizontalalignment="center",
@@ -220,9 +230,11 @@ def plot_cm_fs(fs_list, x, y):
     size = len(list(fs_list))
     col = size/2 if size > 1 and size%2 == 0 else int(size/2)+1
     row = size/2 if size > 1 and size%2 == 0 else int(size/2)+1
+    #iterate through list of feature selection objects
     for key in fs_list:
         c_preds = np.array([])
         c_true = np.array([])
+        #do feature selection for each label in y and fit model on transformed x
         for label in y:
             fs = fs_list[key]
             fs.fit(x, y[label])
@@ -256,53 +268,19 @@ def plot_cm_fs(fs_list, x, y):
         index += 1
     plt.tight_layout()
     plt.show()
-def plot_cm_ensemble(ensemble_pred_list, true_list):
-    index = 1
-    size = len(list(ensemble_pred_list))
-    col = size/2 if size > 1 and size%2 == 0 else int(size/2)+1
-    row = size/2 if size > 1 and size%2 == 0 else int(size/2)+1
-    for key in ensemble_pred_list:
-        ensemble = ensemble_pred_list[key]
-        c_preds = np.array([])
-        c_true = np.array([])
-        for label in true_list:
-            preds = ensemble[label]
-            true = true_list[label]
-            c_preds = np.append(c_preds,preds)
-            c_true = np.append(c_true,true)
-        cm = confusion_matrix(c_true,c_preds)
-        cm = cm.astype('float') / cm.sum(axis=1)[:,np.newaxis]
-        plt.subplot(row, col, index)
-        plt.imshow(cm,interpolation="nearest",cmap=plt.cm.Blues)
-        plt.colorbar()
-        plt.title(key)
-        plt.xlabel("Predicted Label")
-        plt.ylabel("True Label")
-        negative = "0"
-        positive = "1"
-        conds = [negative,positive]
-        ticks = np.arange(len(conds))
-        plt.xticks(ticks,conds)
-        plt.yticks(ticks,conds)
-        thresh = cm.max() / 2
-        fmt = '.2f'
-        for i, j in itertools.product(range(cm.shape[0]), range(cm.shape[1])):
-            plt.text(j, i, format(cm[i, j], fmt),
-                     horizontalalignment="center",
-                     color = "white" if cm[i,j] > thresh else "black")
-        index += 1
-    plt.tight_layout()
-    plt.show()
 def plot_cm_fe(x_list, y):
+    #use LR as base model
     model = LogisticRegression()
     index = 1
     size = len(list(x_list))
     col = size/2 if size > 1 and size%2 == 0 else int(size/2)+1
     row = size/2 if size > 1 and size%2 == 0 else int(size/2)+1
+    #iterate through dictionary of feature vectors
     for key in x_list:
         x = x_list[key]
         c_preds = np.array([])
         c_true = np.array([])
+        #iterate through labels in y, split into train and test, append preds and condition trues
         for label in y:
             x_train, x_val, y_train, y_val = train_test_split(x, y, test_size=0.4, random_state=2)
             model.fit(x_train, y_train[label])
@@ -333,13 +311,17 @@ def plot_cm_fe(x_list, y):
         index += 1
     plt.tight_layout()
     plt.show()
+#functions used to get balanced accuracy
 def get_balanced_accuracy(models, x, y):
     c_preds = np.array([])
     c_true = np.array([])
     bacc_list = {}
+    #iterate through model in model dictionary
     for key in models:
         model = models[key]
+        #for label in y fit each model
         for label in y:
+            #split data into train and test sets
             x_train, x_val, y_train, y_val = train_test_split(x, y, test_size=0.5)
             model.fit(x_train, y_train[label])
             preds = model.predict(x_val)
@@ -347,6 +329,7 @@ def get_balanced_accuracy(models, x, y):
             c_preds = np.append(c_preds, preds)
             c_true = np.append(c_true, true)
         #roc_auc is equivalent to balanced accuracy given binary preds and true labels
+        #use roc_auc_score on predictions, which gives balanced accuracy
         bacc = roc_auc_score(c_true, c_preds)
         bacc = round(bacc,4)
         bacc_list[key] = bacc
@@ -355,10 +338,12 @@ def get_balanced_accuracy(models, x, y):
 def get_balanced_accuracy_fs(fs_list, x, y):
     model = LogisticRegression()
     bacc_list = {}
+    #iterate through feature selection object in dictionary
     for key in fs_list:
         c_preds = np.array([])
         c_true = np.array([])
         fs = fs_list[key]
+        #use feature selection object to transform x
         for label in y:
             fs.fit(x,y[label])
             new_x = fs.transform(x)
@@ -368,7 +353,7 @@ def get_balanced_accuracy_fs(fs_list, x, y):
             true = y_val[label]
             c_preds = np.append(c_preds, preds)
             c_true = np.append(c_true, true)           
-                #roc_auc is equivalent to balanced accuracy given binary preds and true labels
+            #roc_auc is equivalent to balanced accuracy given binary preds and true labels
             bacc = roc_auc_score(c_true, c_preds)
             bacc = round(bacc,4)
             bacc_list[key] = bacc
@@ -379,8 +364,10 @@ def get_balanced_accuracy_fe(x_list, y):
     c_preds = np.array([])
     c_true = np.array([])
     bacc_list = {}
+    #iterate through list of feature vectors
     for key in x_list:
         x = x_list[key]
+        #iterate through label in y
         for label in y:
             x_train, x_val, y_train, y_val = train_test_split(x, y, test_size=0.5)
             model.fit(x_train, y_train[label])
@@ -394,27 +381,8 @@ def get_balanced_accuracy_fe(x_list, y):
         bacc_list[key] = bacc
     print(bacc_list)
     return bacc_list
-def get_balanced_accuracy_ensemble(ensemble_pred_list, y):
-    c_preds = np.array([])
-    c_true = np.array([])
-    bacc_list = {}
-    for key in ensemble_pred_list:
-        ensemble = ensemble_pred_list[key]
-        for label in y:
-            preds = ensemble[label]
-            true = y[label]
-            c_preds = np.append(c_preds, preds)
-            c_true = np.append(c_true, true)
-        #roc_auc is equivalent to balanced accuracy given binary preds and true labels
-        bacc = roc_auc_score(c_true, c_preds)
-        bacc = round(bacc,4)
-        bacc_list[key] = bacc
-    print(bacc_list)
-    return bacc_list
+#Functions that get the Area under the curve score
 def get_auroc(models, x, y):
-    #split into train and validation set
-    #train each label
-    #predict each label
     d = {}
     index = 1
     print(type(y))
@@ -429,20 +397,25 @@ def get_auroc(models, x, y):
     score_dict = {}
     for key in models:
         score_dict[key] = []
+    #iterate through labels in y
     for label in y:
         plt.subplot(row,col,index)
         plt.title(label)
+        #iterate through models in dictionary
         for key in models:
+            #split into train and test sets
             x_train, x_val, y_train, y_val = train_test_split(x, y, test_size = 0.5)
             model = models[key]
             model.fit(x_train, y_train[label])
+            #get probabilities
             preds = model.predict_proba(x_val)[:,1]
+            #get fpr and tpr needed to plot curve
             fpr, tpr, th = roc_curve(y_val[label],preds)
+            #get AUC score from probabilities
             score = roc_auc_score(y_val[label],preds)
             plt.plot(fpr,tpr, label=key)
             #score = round(score,4)
             score_dict[key].append(score)
-        #plt.annotate(score, xy=(0.5,0.5))
         plt.legend(loc='lower right', prop = {'size':15})
         index += 1
     for key in score_dict:
@@ -524,33 +497,6 @@ def get_auroc_fs(fs_list, x, y):
         print(np.mean(score_dict[key]))
     plt.tight_layout()
     plt.show()
-def get_auroc_ensemble(ensemble_pred_list, true_list):
-    index = 1
-    size = len(list(true_list))
-    col = size/2 if size > 1 and size%2 == 0 else int(size/2)+1
-    row = size/2 if size > 1 and size%2 == 0 else int(size/2)+1
-    score_dict = {}
-    for key in ensemble_pred_list:
-        score_dict[key] = []
-    for label in true_list:
-        plt.subplot(row, col, index)
-        plt.title(label)
-        c_score = np.array([])
-        for key in ensemble_pred_list:
-            ensemble = ensemble_pred_list[key]
-            preds = ensemble[label]
-            true = true_list[label]
-            fpr, tpr, th = roc_curve(true,preds)
-            score = roc_auc_score(true, preds)
-            score_dict[key].append(score)
-            plt.plot(fpr, tpr, label=key)
-            plt.legend(loc="lower right", prop = {'size':15})
-        index += 1
-    for key in score_dict:
-        print(key)
-        print(np.mean(score_dict[key]))
-    plt.tight_layout()
-    plt.show()
 def barplot_benchmark(index, y, title, xticks, ylim=None):
     plt.bar(np.arange(index), y)
     plt.ylim(ylim)
@@ -559,80 +505,14 @@ def barplot_benchmark(index, y, title, xticks, ylim=None):
     print(type(xticks))
     plt.xticks(np.arange(index), xticks)
     plt.show()
-def build_cnn():
-    cnn = Sequential()
-    #cnn.add(Conv1D(filters = 32, kernel_size = (5,5), padding = 'Same', activation='relu', input_shape = input_shape))
-    cnn.add(MaxPool1D(pool_size = (2,2), strides = (2,2)))
-    cnn.add(Dropout(0.25))
-
-    cnn.add(Flatten())
-    cnn.add(Dense(256, activation = 'relu'))
-    cnn.add(Dropout(0.5))
-    cnn.add(Dense(10, activation = 'softmax'))
-
-    optimizer = RMSprop(lr = 0.001, rho = 0.9, epsilon = 1e-08, decay=0.0)
-    cnn.compile(optimizer = optimizer, loss = 'categorical_crossentropy', metrics = ['accuracy'])
-    return cnn
-def sgd_best_alpha(alphas, x, y):
-    scores = []
-    base_model = LogisticRegression()
-    for alpha in alphas:
-        fs = SGDClassifier(alpha=alpha,penalty='elasticnet')
-        for label in y:
-            fs.fit(x,y[label])
-        sfm = SelectFromModel(fs, prefit=True)
-        new_x = sfm.transform(x)
-        scores.append(score_cv_model(base_model, new_x, y, cv = 5))
-        del fs, sfm, new_x
-    plt.plot(alphas,scores)
-    plt.show()
-def kbest_find_k(kList, x, y):
-    scores = []
-    base_model = LogisticRegression()
-    for k in kList:
-            clf = SelectKBest(chi2, k=k)
-            for label in y:
-                clf.fit(x,y[label])
-            new_x = clf.transform(x)
-            scores.append(score_cv_model(base_model, new_x, y, cv = 5))
-    plt.plot(kList,scores)
-    plt.show()
-def lr_find_c(cList, x,y):
-    scores = []
-    base_model = LogisticRegression()
-    for c in cList:
-        clf = LogisticRegression(penalty = 'l1', C=c)
-        for label in y:
-            clf.fit(x,y[label])
-        sfm = SelectFromModel(clf, prefit=True)
-        new_x = sfm.transform(x)
-        scores.append(score_cv_model(base_model, new_x, y, cv = 5))
-    plt.plot(cList, scores)
-    plt.show()
-def ridge_find_alpha(alphas, x, y):
-    scores = []
-    base_model = LogisticRegression()
-    for alpha in alphas:
-        clf = RidgeClassifier(alpha=alpha)
-        for label in y:
-            clf.fit(x,y[label])
-        sfm = SelectFromModel(clf, prefit=True)
-        new_x = sfm.transform(x)
-        scores.append(score_cv_model(base_model, new_x, y, cv = 5))
-    plt.plot(alphas, scores)
-    plt.show()
-def build_model(model, x, y):
-    print(list(y))
-    for label in list(y):
-        print(label)
-        model.fit(x, y[label])
-    return model
+#old function used to score model
 def score_model(model, x, y):
     scores = []
     for label in y:
         score = model.score(x, y[label])
         scores.append(score)
     return np.mean(scores)
+#used to get CV Accuracy, called in benchmarking function
 def score_cv_model(model, x, y, cv=None):
     scores = []
     for label in y:
@@ -649,78 +529,11 @@ def read_dict(filepath):
     with open(filepath,'r') as file:
         data = json.load(file)
         return data
+#function used to write benchmarks results to csv
 def write_dict_to_csv(d, filepath):
     with open(filepath, 'a') as csvfile:
         fieldnames = d.keys()
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames,lineterminator='\n')
         writer.writerow(d)
-def write_sparse(array, filepath):
-    np.savez(filepath, data=array.data, indices = array.indices,
-             indptr = array.indptr, shape = array.shape)
-def read_sparse(filepath):
-    f = np.load(filepath)
-    return csr_matrix((f['data'], f['indices'], f['indptr']), shape = f['shape'])
-def strip_text(x):
-    commentList = []
-    remove = ",/\+-_=.:()\"[]{}!"
-    replace = "                 "
-    emoji_strip = re.compile('[\U00010000-\U0010ffff]', flags=re.UNICODE)
-    transTable = str.maketrans(remove, replace)
-    #pattern = re.compile('[\W_]+')
-    for comment in x['comment_text']:
-        re.sub('\W+', '',comment)
-        comment = comment.translate(transTable)
-        comment = emoji_strip.sub(r'',comment)
-        comment = re.sub(r'\t', ' ', comment)
-        comment = re.sub(r'\n', ' ', comment)
-        comment = re.sub(r'\r', ' ', comment)
-        comment = re.sub("'", '', comment)
-        comment = comment.lower()
-        comment = unidecode(comment)
-        comment.replace(r'\"', '')
-        #comment = re.split('\W+',comment)
-        commentList.append(comment)
-    return commentList
-def bag_of_words(clean_x):
-    word_bag = {}
-    incrementer = 0
-    for comment in clean_x:
-        for word in comment.split():
-            if word not in word_bag:
-                word_bag[word] = incrementer
-                incrementer += 1
-    write_dict(word_bag, 'bag_of_words.json')
-    return word_bag
-#takes in a bag of words dictionary and a list of cleaned comments and produces
-# a json file of term freqs for each comment
-def term_frequencies(word_bag, comments):
-    tfDict = {}
-    commentID = 1
-    for comment in comments:
-        tfDict[commentID] = {}
-        #go through each word and count occurences
-        for word in comment.split():
-            if word not in tfDict[commentID]:
-                tfDict[commentID][word] = 1
-            else:
-                tfDict[commentID][word] += 1
-        commentID += 1
-    write_dict(tfDict,'term_freqs.json')
-#given a bag of words and a corpus, generates a json file containg inverse document frequencies for every term in the bag of words
-def idf(word_bag, comments):
-    idf_dict = {}
-    N = len(comments)
-    for term in word_bag:
-        nt = term_doc_count(term, comments)
-        idf_dict[term] = np.log(N/nt)
-    write_dict(idf_dict, "inverse_doc_freqs.json")
-    return idf_dict
-#gets the count of documents that contain a given term from a given corpus
-def term_doc_count(term, comments):
-    doc_count = 1
-    for comment in comments:
-        if term in comment:
-            doc_count += 1
-    return doc_count
 if __name__ == "__main__":
     main()

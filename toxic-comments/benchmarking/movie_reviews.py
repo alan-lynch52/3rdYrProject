@@ -45,26 +45,35 @@ def main():
         '3':'somewhat positive',
         '4':'positive',
         }
+    #load train data
     train = pd.read_csv("movie_reviews_train.tsv", sep = "\t")
+    #split into x and y
     x = train['Phrase']
     y = train['Sentiment']
+    #make into binary classifications
     y = pd.get_dummies(y)
     #y = y.to_frame(name="Sentiment")
+    base_model = LogisticRegression()
+    d = collections.OrderedDict()
+    
     tfidf_vec = TfidfVectorizer()
     tfidf_train = tfidf_vec.fit_transform(x)
+    tfidf_char_vec = TfidfVectorizer(analyzer='char')
+    tfidf_char_train = tfidf_char_vec.fit_transform(x)
+    count_vec = CountVectorizer()
+    count_train = count_vec.fit_transform(x)
+    bin_vec = TfidfVectorizer(use_idf = False,norm = None, binary = True)
+    bin_train = bin_vec.fit_transform(x)
 
-##    tfidf_char_vec = TfidfVectorizer(analyzer='char')
-##    tfidf_char_train = tfidf_char_vec.fit_transform(x)
-##    
-##    count_vec = CountVectorizer()
-##    count_train = count_vec.fit_transform(x)
-##
-##    bin_vec = TfidfVectorizer(use_idf = False,norm = None, binary = True)
-##    bin_train = bin_vec.fit_transform(x)
-
-    base_model = LogisticRegression()
-
-    d = collections.OrderedDict()
+    #Feature Extraction Experiments
+    d['TFIDF'] = tfidf_train
+    d['Count'] = count_train
+    d['Binary'] = bin_train
+    benchmark('TFIDF',base_model, tfidf_train,y)
+    benchmark('Count',base_model, count_train, y)
+    benchmark('Binary',base_model, bin_train,y)
+    get_balanced_accuracy_fe(d,y)
+    get_auroc_fe(d,y)
     #STACKING
 ##    tfidf_count_bin = hstack([tfidf_train, count_train, bin_train])
 ##    tfidf_count = hstack([tfidf_train, count_train])

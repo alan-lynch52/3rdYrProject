@@ -1,10 +1,10 @@
 from toxic_comments import *
 def main():
+    #load train and test
     train = pd.read_csv("train.csv")
     test = pd.read_csv("test.csv")
 
-    ##import warnings
-    ##warnings.filterwarnings("ignore")
+    #split into x and y
     y = train.iloc[:,2:]
     LABELS = ['toxic','severe_toxic','obscene','threat','insult','identity_hate']
     x = train.drop(labels = ['toxic','severe_toxic','obscene','threat','insult','identity_hate'],axis=1)
@@ -30,19 +30,7 @@ def main():
     train_tfidf = tfidf_vec.transform(x['comment_text'])
     test_tfidf = tfidf_vec.transform(test['comment_text'])
 
-
-
-    ###Random Forest hyper parameter tuning
-    ##rfc = RandomForestClassifier(n_estimators=10)
-    ##rfc_benchmarks = benchmark('rfc-nestimators-10',rfc, train_tfidf, y)
-    ###write_dict_to_csv(rfc_benchmarks, 'model-benchmarks.csv')
-    ##rfc = RandomForestClassifier(n_estimators=15)
-    ##rfc_benchmarks = benchmark('rfc-nestimators-15',rfc, train_tfidf, y)
-    ###write_dict_to_csv(rfc_benchmarks, 'model-benchmarks.csv')
-    ##rfc = RandomForestClassifier(n_estimators=25)
-    ##rfc_benchmarks = benchmark('rfc-nestimators-25',rfc, train_tfidf, y)
-    ###write_dict_to_csv(rfc_benchmarks, 'model-benchmarks.csv')
-    ##
+    #PARAMETER TUNING
     ###Logistic Regression Hyper parameter tuning
     ##lr_ncg = LogisticRegression(solver='newton-cg')
     ##lr_lbfgs = LogisticRegression(solver='lbfgs')
@@ -172,7 +160,7 @@ def main():
     ##write_dict_to_csv(mnb01_benchmarks, 'model-benchmarks.csv')
     #highest 3-fold cv attained by alpah of 0.1 and 0.01, 0.1 took less time and will be used
  
-    #optimal models found
+    #Model Experiment
     optimal_lr = LogisticRegression(solver='sag',C=0.5, tol=0.01)    
     optimal_bnb = BernoulliNB(alpha=0.6)
     optimal_mnb = MultinomialNB(alpha=0.1)
@@ -181,7 +169,6 @@ def main():
     d['LR'] = optimal_lr
     d['MNB'] = optimal_mnb
     d['BNB'] = optimal_bnb
-
 
     get_auroc(d, train_tfidf, y)
     plot_cm(d,train_tfidf, y)
@@ -199,19 +186,15 @@ def main():
     ##
     ##rfc_benchmarks = benchmark('rfc-nestimators-15', optimal_rfc, train_tfidf, y)
     ##write_dict_to_csv(rfc_benchmarks,'model-benchmarks.csv')
-    ##
+
     ###predictions
-    ##lr_preds = make_prediction(train_tfidf, y, test_tfidf, test_ids, model=optimal_lr)
+    ##lr_preds = get_probability(train_tfidf, y, test_tfidf, test_ids, model=optimal_lr)
     ##lr_preds.to_csv('lr_submission.csv',index=False)
     ###0.9696 LB attained on optimal LogisticRegression
-    ##
-    ##rfc_preds = make_prediction(train_tfidf, y, test_tfidf, test_ids, model=optimal_rfc)
-    ##rfc_preds.to_csv('rfc_submission.csv',index=False)
-    ###0.8785 LB attain on optimal Random Forest
-    ##bnb_preds = make_prediction(bin_train, y, bin_test, test_ids, model=optimal_bnb)
+    ##bnb_preds = get_probability(bin_train, y, bin_test, test_ids, model=optimal_bnb)
     ##bnb_preds.to_csv('bnb_submission.csv',index=False)
     ###0.8804 LB attained on optimal bernoulli NB
-    ##mnb_preds = make_prediction(train_tfidf, y, test_tfidf, test_ids, model=optimal_mnb)
+    ##mnb_preds = get_probability(train_tfidf, y, test_tfidf, test_ids, model=optimal_mnb)
     ##mnb_preds.to_csv('mnb_submission.csv',index=False)
     ###0.8708 LB attained on optimal multinomial NB
 if __name__ == '__main__':

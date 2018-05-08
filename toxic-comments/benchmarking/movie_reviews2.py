@@ -3,7 +3,9 @@ import sys
 sys.path.insert(0, '..')
 from toxic_comments import *
 def main():
+    #load train data
     train = pd.read_csv('movie_reviews2_train.tsv', sep='\t')
+    #split data into x and y
     x = train['review']
     y = train['sentiment']
     y = y.to_frame(name="sentiment")
@@ -79,36 +81,7 @@ def main():
 ##    benchmark('rf', rf, tfidf_train, y)
 ##    get_auroc(d, tfidf_train, y)
 ##    get_balanced_accuracy(d, tfidf_train, y)
-##    
-##    x_train, x_val, y_train, y_val = train_test_split(tfidf_train, y, test_size=0.4, random_state = 2)
-##    get_probability(x_train, y_train, x_val, model = lr).to_csv('mov_rev2/lr-prob.csv',index=False)
-##    get_probability(x_train, y_train, x_val, model = bnb).to_csv('mov_rev2/bnb-prob.csv',index=False)
-##    get_probability(x_train, y_train, x_val, model = mnb).to_csv('mov_rev2/mnb-prob.csv',index=False)
-##    get_probability(x_train, y_train, x_val, model = rf).to_csv('mov_rev2/rf-prob.csv',index=False)
-##    y_val.to_csv('mov_rev2/true-labels.csv',index=False)
     #ENSEMBLING
-##    lr_prob = pd.read_csv('mov_rev2/lr-prob.csv')
-##    bnb_prob = pd.read_csv('mov_rev2/bnb-prob.csv')
-##    mnb_prob = pd.read_csv('mov_rev2/mnb-prob.csv')
-##    rf_prob = pd.read_csv('mov_rev2/rf-prob.csv')
-##    
-##    LABELS = ['sentiment']
-##    ens_prob = lr_prob.copy()
-##    ens_prob[LABELS] = (lr_prob[LABELS] + bnb_prob[LABELS]) / 2
-##    ens_prob.to_csv('mov_rev2/e3.csv', index=False)
-
-##    e1 = pd.read_csv('mov_rev2/e1.csv')
-##    e2 = pd.read_csv('mov_rev2/e2.csv')
-##    e3 = pd.read_csv('mov_rev2/e3.csv')
-##    e4 = pd.read_csv('mov_rev2/e4.csv')
-##    true = pd.read_csv('mov_rev2/true-labels.csv')
-##
-##    d['e1'] = e1
-##    d['e2'] = e2
-##    d['e3'] = e3
-##    d['e4'] = e4
-##    get_auroc_ensemble(d, true)
-##    get_balanced_accuracy_ensemble(d,true)
     et = ExtraTreesClassifier(n_estimators=10)
     bag_lr = BaggingClassifier(base_estimator=LogisticRegression(solver='sag',C=0.5, tol=0.01), n_estimators=25)
     rf = RandomForestClassifier(n_estimators=15)

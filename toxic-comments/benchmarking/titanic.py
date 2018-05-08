@@ -4,11 +4,14 @@ sys.path.insert(0, '..')
 from toxic_comments import *
 
 def main():
+    #load train dataset
     train = pd.read_csv('titanic_train.csv')
+    #split into x and y
     y = train['Survived']
     y = y.to_frame(name='Survived')
     x = train.drop(['Survived','Name','Cabin','Ticket'],axis=1)
     x = pd.get_dummies(x)
+    #fill missing values
     x = x.fillna(0)
     base_model = LogisticRegression()
     d = collections.OrderedDict()

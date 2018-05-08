@@ -4,13 +4,16 @@ sys.path.insert(0, '..')
 from toxic_comments import *
 
 def main():
+    #load data
     data = loadarff('amazon_reviews.arff')
     train = pd.DataFrame(data[0])
+    #split into x and y
     y = train['class']
+    #turn y into set of binary classifications
     y = pd.get_dummies(y)
     x = train.drop(['class'],axis=1)
     base_model = LogisticRegression()
-    d= collections.OrderedDict()
+    d = collections.OrderedDict()
     print(train.shape)
     #FEATURE SELECTION
 #FEATURE SELECTION
@@ -59,6 +62,6 @@ def main():
     benchmark('GB',gb,x,y)
     get_auroc(d,x,y)
     get_balanced_accuracy(d,x, y)
-##    
+   
 if __name__ == '__main__':
     main()

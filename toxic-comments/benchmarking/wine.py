@@ -5,8 +5,10 @@ from sklearn.datasets import load_wine
 from sklearn.preprocessing import StandardScaler
 from sklearn.feature_selection import mutual_info_classif
 def main():
+    #load training data
     data = load_wine()
     train = pd.DataFrame(np.column_stack((data.data, data.target)), columns= data.feature_names +['target'])
+    #split train into x and y
     y = train['target']
     print(train.shape)
     y = y.to_frame('target')
@@ -15,10 +17,13 @@ def main():
     clean = {'target': {0: 'wine0', 1 : 'wine1', 2 : 'wine2'}}
     y.replace(clean, inplace=True)
     y = pd.get_dummies(y)
+
+    #standardize data
     scaler = StandardScaler()
     x = scaler.fit_transform(train)
     base_model = LogisticRegression()
     d = collections.OrderedDict()
+
     #Feature Selection
 ##    k = int(x.shape[1] / 2)
 ##    kbest = SelectKBest(mutual_info_classif,k=k)
@@ -34,20 +39,18 @@ def main():
 ##    get_balanced_accuracy_fs(d,x,y)
     
     #Modeling
-    lr = LogisticRegression(C=0.5, tol=0.01)
-    bnb = BernoulliNB(alpha = 1.0)
-    mnb = MultinomialNB(alpha = 1.0)
-    svc = SVC(probability=True)
-    d['lr'] = lr
-    d['bnb'] = bnb
-    #d['mnb'] = mnb
-    d['svc'] = svc
-    benchmark('lr',lr,x,y)
-    benchmark('bnb',bnb,x,y)
-    #benchmark('mnb',mnb,x,y)
-    benchmark('svc',svc,x,y)
-    get_auroc(d, x, y)
-    get_balanced_accuracy(d, x, y)
+##    lr = LogisticRegression(C=0.5, tol=0.01)
+##    bnb = BernoulliNB(alpha = 1.0)
+##    mnb = MultinomialNB(alpha = 1.0)
+##    svc = SVC(probability=True)
+##    d['lr'] = lr
+##    d['bnb'] = bnb
+##    d['mnb'] = mnb
+##    benchmark('lr',lr,x,y)
+##    benchmark('bnb',bnb,x,y)
+##    benchmark('mnb',mnb,x,y)
+##    get_auroc(d, x, y)
+##    get_balanced_accuracy(d, x, y)
 
     #Ensembles
 ##    et = ExtraTreesClassifier(n_estimators=10)

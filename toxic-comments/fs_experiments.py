@@ -4,12 +4,11 @@ from sklearn.feature_selection import RFE
 from sklearn.feature_selection import chi2
 from sklearn.feature_selection import SelectFromModel
 from toxic_comments import *
-
+#load train and test
 train = pd.read_csv("train.csv")
 test = pd.read_csv("test.csv")
 
-##import warnings
-##warnings.filterwarnings("ignore")
+#Split into x and y
 y = train.iloc[:,2:]
 LABELS = ['toxic','severe_toxic','obscene','threat','insult','identity_hate']
 x = train.drop(labels = ['toxic','severe_toxic','obscene','threat','insult','identity_hate'],axis=1)
@@ -28,6 +27,8 @@ train_tfidf = tfidf_vec.transform(x['comment_text'])
 test_tfidf = tfidf_vec.transform(test['comment_text'])
 
 model = LogisticRegression()
+
+#PARAMETER TUNING
 #RFE MODELS
 ##rfe_estimator = LogisticRegression()
 ##rfe_benchmarks = benchmark('rfe-nfeats-300000',model,train_tfidf, y,fs=RFE(rfe_estimator, step=0.05, n_features_to_select=300000))
@@ -50,15 +51,12 @@ model = LogisticRegression()
 ##rfe_benchmarks = benchmark('rfe-nfeats-5000',model,train_tfidf, y,fs=RFE(rfe_estimator, step=0.05, n_features_to_select=5000))
 ###write_dict_to_csv(rfe_benchmarks,'benchmarks.csv')
 
-
-
-#FEATURE SELECTION EXPERIMENTS
 ##    print("SelectKBest")
 num_features = len(tfidf_vec.get_feature_names())
-k1 = int(num_features*0.1)
+#k1 = int(num_features*0.1)
 k2 = int(num_features*0.25)
-k3 = int(num_features*0.5)
-k4 = int(num_features*0.75)
+#k3 = int(num_features*0.5)
+#k4 = int(num_features*0.75)
 #k_list = [k1, k2, k3, k4]
 #kbest_find_k(k_list, tfidf, y)
 #k2((num_features)*0.25) found to be the best  for kbest
@@ -87,10 +85,7 @@ k4 = int(num_features*0.75)
 ###write_dict_to_csv(sfm_benchmarks,'benchmarks.csv')
 
 
-#PREDICTIONS FOR OPTIMAL FS MODELS
-##sfm_preds = make_prediction(train_tfidf, y, test_tfidf, test_ids, fs=SelectFromModel(LogisticRegression(), threshold="0.1*mean"), model=model)
-##rfe_preds = make_prediction(train_tfidf, y, test_tfidf, test_ids, fs=RFE(LogisticRegression(),step=1, n_features_to_select=None),model=model)
-##kbest_preds = make_prediction(train_tfidf, y, test_tfidf, test_ids,fs = SelectKBest(chi2, k=k2), model=model)
+#FEATURE SELECTION EXPERIMENT
 optimal_sfm = SelectFromModel(LogisticRegression(), threshold="0.1*mean")
 optimal_rfe = RFE(LogisticRegression(), step=0.05, n_features_to_select=None)
 optimal_kbest = SelectKBest(chi2, k=k2)
@@ -99,14 +94,14 @@ d['SFM'] = optimal_sfm
 d['RFE'] = optimal_rfe
 d['KBEST'] = optimal_kbest
 
-#d['B-SFM'] = SelectFromModel(LogisticRegression())
-#d['B-RFE'] = RFE(LogisticRegression(), step=0.05)
-#d['B-KBEST'] = SelectKBest(chi2)
-
 get_auroc_fs(d, train_tfidf, y)
-#plot_cm_fs(d, train_tfidf, y)
+plot_cm_fs(d, train_tfidf, y)
 get_balanced_accuracy_fs(d, train_tfidf, y)
 #to csv
+#PREDICTIONS FOR OPTIMAL FS MODELS
+##sfm_preds = get_probability(train_tfidf, y, test_tfidf, test_ids, fs=SelectFromModel(LogisticRegression(), threshold="0.1*mean"), model=model)
+##rfe_preds = get_probability(train_tfidf, y, test_tfidf, test_ids, fs=RFE(LogisticRegression(),step=1, n_features_to_select=None),model=model)
+##kbest_preds = get_probability(train_tfidf, y, test_tfidf, test_ids,fs = SelectKBest(chi2, k=k2), model=model)
 ##rfe_preds.to_csv('submission.csv',index=False)
 ##sfm_preds.to_csv('submission.csv',index=False)
 ##kbest_preds.to_csv('submission.csv',index = False)
