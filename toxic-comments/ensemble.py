@@ -90,7 +90,7 @@ def main():
 ##        benchmark('GB-'+str(n),gb,train_tfidf,y)
 
     et = ExtraTreesClassifier(n_estimators=10)
-    bag_lr = BaggingClassifier(base_estimator=clf, n_estimators=25)
+    bag_lr = BaggingClassifier(base_estimator=LogisticRegression(solver='sag',C=0.5, tol=0.01), n_estimators=25)
     rf = RandomForestClassifier(n_estimators=15)
     gb = GradientBoostingClassifier(n_estimators=10)
     d = collections.OrderedDict()

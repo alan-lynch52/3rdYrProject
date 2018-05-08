@@ -171,53 +171,21 @@ def main():
     ##mnb01_benchmarks = benchmark("multinomialNB-alpha-0.01",mnb01, train_tfidf, y)
     ##write_dict_to_csv(mnb01_benchmarks, 'model-benchmarks.csv')
     #highest 3-fold cv attained by alpah of 0.1 and 0.01, 0.1 took less time and will be used
-##    c_list = [0.01,0.1,0.25,0.5,0.75,1.0]
-##
-##    for c in c_list:
-##        svm = SVC(C=c,probability=True)
-##        benchmark('svc-'+str(c),svm,train_tfidf, y)
-    c_list = ['gini','entropy']
-    for c in c_list:
-        dt = DecisionTreeClassifier(criterion=c)
-        benchmark('dt-'+str(c),dt,train_tfidf, y)
-
+ 
     #optimal models found
     optimal_lr = LogisticRegression(solver='sag',C=0.5, tol=0.01)    
     optimal_bnb = BernoulliNB(alpha=0.6)
     optimal_mnb = MultinomialNB(alpha=0.1)
-    optimal_rfc = RandomForestClassifier(n_estimators=15)
-    ##d = collections.OrderedDict()
-    ##d['LR'] = optimal_lr
-    ##d['MNB'] = optimal_mnb
-    ##d['BNB'] = optimal_bnb
-    ##d['RF'] = optimal_rfc
-    ##x_train, x_val, y_train, y_val = train_test_split(train_tfidf, y,test_size=0.4, random_state = 2)
-    ##lr_preds = get_prediction(x_train, y_train, x_val, model = optimal_lr)
-    ##lr_probs = get_probability(x_train, y_train, x_val, model = optimal_lr)
-    ##lr_preds.to_csv('val/lr_preds.csv',index=False)
-    ##lr_probs.to_csv('val/lr_probs.csv',index=False)
-    ##
-    ##mnb_preds = get_prediction(x_train, y_train, x_val, model = optimal_mnb)
-    ##mnb_probs = get_probability(x_train, y_train, x_val, model = optimal_mnb)
-    ##mnb_preds.to_csv('val/mnb_preds.csv',index=False)
-    ##mnb_probs.to_csv('val/mnb_probs.csv',index=False)
-    ##
-    ##bnb_preds = get_prediction(x_train, y_train, x_val, model = optimal_bnb)
-    ##bnb_probs = get_probability(x_train, y_train, x_val, model = optimal_bnb)
-    ##bnb_preds.to_csv('val/bnb_preds.csv',index=False)
-    ##bnb_probs.to_csv('val/bnb_probs.csv',index=False)
-    ##
-    ##rf_preds = get_prediction(x_train, y_train, x_val, model = optimal_rfc)
-    ##rf_probs = get_probability(x_train, y_train, x_val, model = optimal_rfc)
-    ##rf_preds.to_csv('val/rf_preds.csv',index=False)
-    ##rf_probs.to_csv('val/rf_probs.csv',index=False)
 
-    ##true = y_val
-    ##true.to_csv('val/true_labels.csv',index=False)
+    d = collections.OrderedDict()
+    d['LR'] = optimal_lr
+    d['MNB'] = optimal_mnb
+    d['BNB'] = optimal_bnb
 
-    #get_auroc(d, train_tfidf, y)
-    #plot_cm(d,train_tfidf, y)
-    #get_balanced_accuracy(d,train_tfidf, y)
+
+    get_auroc(d, train_tfidf, y)
+    plot_cm(d,train_tfidf, y)
+    get_balanced_accuracy(d,train_tfidf, y)
 
     ###benchmark optimal models
     ##lr_benchmarks = benchmark('lr-solver-sag-c-0.5-tol-0.01',optimal_lr, train_tfidf, y)

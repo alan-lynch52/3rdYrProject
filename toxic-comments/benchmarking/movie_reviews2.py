@@ -97,17 +97,32 @@ def main():
 ##    ens_prob[LABELS] = (lr_prob[LABELS] + bnb_prob[LABELS]) / 2
 ##    ens_prob.to_csv('mov_rev2/e3.csv', index=False)
 
-    e1 = pd.read_csv('mov_rev2/e1.csv')
-    e2 = pd.read_csv('mov_rev2/e2.csv')
-    e3 = pd.read_csv('mov_rev2/e3.csv')
-    e4 = pd.read_csv('mov_rev2/e4.csv')
-    true = pd.read_csv('mov_rev2/true-labels.csv')
-
-    d['e1'] = e1
-    d['e2'] = e2
-    d['e3'] = e3
-    d['e4'] = e4
-    get_auroc_ensemble(d, true)
-    get_balanced_accuracy_ensemble(d,true)
+##    e1 = pd.read_csv('mov_rev2/e1.csv')
+##    e2 = pd.read_csv('mov_rev2/e2.csv')
+##    e3 = pd.read_csv('mov_rev2/e3.csv')
+##    e4 = pd.read_csv('mov_rev2/e4.csv')
+##    true = pd.read_csv('mov_rev2/true-labels.csv')
+##
+##    d['e1'] = e1
+##    d['e2'] = e2
+##    d['e3'] = e3
+##    d['e4'] = e4
+##    get_auroc_ensemble(d, true)
+##    get_balanced_accuracy_ensemble(d,true)
+    et = ExtraTreesClassifier(n_estimators=10)
+    bag_lr = BaggingClassifier(base_estimator=LogisticRegression(solver='sag',C=0.5, tol=0.01), n_estimators=25)
+    rf = RandomForestClassifier(n_estimators=15)
+    gb = GradientBoostingClassifier(n_estimators=10)
+    d = collections.OrderedDict()
+    d['ET'] = et
+    d['Bagging'] = bag_lr
+    d['RF'] = rf
+    d['GB'] = gb
+    benchmark('ET',et,tfidf_train,y)
+    benchmark('Bagging',et,tfidf_train,y)
+    benchmark('RF',rf,tfidf_train,y)
+    benchmark('GB',gb,tfidf_train,y)
+    get_auroc(d,tfidf_train,y)
+    get_balanced_accuracy(d,tfidf_train, y)
 if __name__ == "__main__":
     main()
